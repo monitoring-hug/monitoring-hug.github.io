@@ -1,481 +1,658 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>주택 신속 공급대책 과제 현황판 - 로그인</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root{
-      --blue:#1C75BC; --sky:#009ED1; --green:#80C342;
-      --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; --bg:#f6f8fb;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Arial,"Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink)}
-    .wrap{min-height:100vh;display:grid;place-items:center;padding:24px}
-    .card{width:min(460px,100%);background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px;box-shadow:0 14px 38px rgba(0,0,0,.07)}
-    h1{font-size:24px;margin:0 0 8px}
-    .sub{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:24px}
-    .screen{display:none}
-    .screen.active{display:block}
-    label{display:block;font-size:14px;font-weight:700;margin:14px 0 7px}
-    input{width:100%;height:46px;border:1px solid #cfd5dd;border-radius:10px;padding:0 12px;font-size:15px}
-    input:focus{outline:2px solid rgba(28,117,188,.18);border-color:var(--blue)}
-    button{width:100%;height:46px;border:0;border-radius:10px;background:var(--blue);color:white;font-weight:700;font-size:15px;cursor:pointer;margin-top:16px}
-    button.secondary{background:#eef2f7;color:var(--ink)}
-    button:disabled{opacity:.55;cursor:not-allowed}
-    .msg{display:none;margin-top:14px;border-radius:10px;padding:11px 12px;font-size:13px;line-height:1.5}
-    .msg.show{display:block}
-    .msg.error{background:#fff1f2;color:#9f1239}
-    .msg.ok{background:#ecfdf5;color:#166534}
-    .qrbox{text-align:center;margin:18px 0}
-    .qrbox img{max-width:220px;width:100%;border:1px solid var(--line);padding:10px;background:#fff;border-radius:12px}
-    .secret{word-break:break-all;background:#f3f4f6;padding:10px;border-radius:8px;font-family:monospace;font-size:12px}
-    .badge{display:inline-block;background:#e8f3fb;color:#0e5d95;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:700;margin-bottom:14px}
-    .note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:14px}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>주택 신속 공급대책 과제 현황판</title>
+<style>
+:root{
+  --hug-blue:#1C75BC;
+  --hug-sky:#009ED1;
+  --hug-green:#80C342;
+  --ink:#182433;
+  --muted:#6D7885;
+  --line:#E5EAF0;
+  --surface:#FFFFFF;
+  --bg:#F3F7FB;
+  --waiting:#C7CFD8;
+  --shadow:0 10px 28px rgba(35,61,87,.09);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:Pretendard,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",Arial,sans-serif;
+  color:var(--ink);
+  background:var(--bg);
+  min-width:320px;
+}
+button,select{font:inherit}
+.page{max-width:1520px;margin:0 auto;padding:34px 34px 70px}
+.topbar{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+  margin-bottom:34px;
+}
+.title-wrap{min-width:0}
+.page-title{margin:0;font-size:30px;line-height:1.25;font-weight:800;letter-spacing:-.7px;color:#153B59}
+.page-subtitle{margin:9px 0 0;color:var(--muted);font-size:14px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.filter{
+  min-width:148px;height:42px;padding:0 36px 0 13px;border:1px solid #DCE4EC;border-radius:10px;
+  background:#fff;color:#334152;outline:none;cursor:pointer;
+}
+.filter:focus{border-color:var(--hug-sky);box-shadow:0 0 0 3px rgba(0,158,209,.12)}
+
+/* Overall summary */
+.overview{
+  margin:-10px 0 38px;padding:18px 22px;background:#fff;border:1px solid rgba(207,219,230,.78);
+  border-radius:16px;box-shadow:0 7px 22px rgba(35,61,87,.07);
+  display:grid;grid-template-columns:minmax(210px,.9fr) minmax(520px,2.1fr);align-items:stretch;gap:22px;
+}
+.overview-meta{display:flex;flex-direction:column;justify-content:center;padding-right:20px;border-right:1px solid var(--line)}
+.overview-title{font-size:16px;font-weight:850;color:#263B4C;margin-bottom:7px}
+.overview-date{font-size:12px;color:#83909C;font-weight:700}
+.overview-date strong{margin-left:7px;color:#4E6070;font-size:13px}
+.overview-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.overview-stat{min-width:0;padding:11px 14px;border-radius:12px;background:#F7F9FB;display:flex;align-items:baseline;justify-content:center;gap:5px}
+.overview-stat .stat-label{font-size:12px;color:#7B8996;font-weight:750;margin-right:3px}
+.overview-stat strong{font-size:22px;line-height:1;color:#263B4C;font-weight:900}
+.overview-stat .stat-unit{font-size:11px;color:#8A96A2;font-weight:700}
+.overview-stat.complete{background:rgba(128,195,66,.10)}
+.overview-stat.complete strong{color:#5D972C}
+.overview-stat.ongoing{background:rgba(0,158,209,.09)}
+.overview-stat.ongoing strong{color:#087EA4}
+.overview-stat.waiting{background:#F1F4F7}
+.overview-stat.waiting strong{color:#768390}
+
+.section{margin-top:42px}
+.section:first-of-type{margin-top:0}
+.section-heading{display:flex;align-items:center;gap:11px;margin:0 0 18px}
+.section-heading:before{content:"";width:6px;height:30px;border-radius:3px;background:var(--hug-blue);flex:0 0 auto}
+.section-title{font-size:23px;font-weight:800;letter-spacing:-.4px;color:#176EB0}
+.section-count{font-size:13px;font-weight:700;color:#7D8995;background:#EAF0F6;padding:4px 8px;border-radius:999px}
+.card-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px}
+.card{
+  position:relative;display:flex;flex-direction:column;min-height:390px;padding:22px 22px 18px;
+  background:var(--surface);border:1px solid rgba(207,219,230,.75);border-top:4px solid var(--hug-blue);
+  border-radius:var(--radius);box-shadow:var(--shadow);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.card.is-clickable{cursor:pointer}
+.card.is-clickable:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(35,61,87,.14);border-color:#C5D9E8}
+.card.is-clickable:focus-visible{outline:3px solid rgba(0,158,209,.28);outline-offset:2px}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-height:42px}
+.metric-name{font-size:13px;line-height:1.45;color:#465566;font-weight:700;max-width:70%}
+.measure-tag{white-space:nowrap;font-size:11px;line-height:1;padding:7px 9px;border-radius:999px;background:#EFF5F8;color:#547081;font-weight:700}
+.detail-title{
+  min-height:62px;margin:14px 2px 5px;display:flex;align-items:flex-start;justify-content:center;text-align:center;
+  font-size:19px;line-height:1.5;font-weight:800;letter-spacing:-.35px;color:#172230;
+}
+.progress-wrap{display:flex;justify-content:center;align-items:center;margin:12px 0 15px}
+.progress-ring{
+  --p:0;--ring:var(--hug-sky);width:122px;height:122px;border-radius:50%;
+  background:conic-gradient(var(--ring) var(--pct),#E9EDF1 0);
+  display:grid;place-items:center;position:relative;transform:rotate(-90deg);
+}
+.progress-ring:before{content:"";position:absolute;width:92px;height:92px;border-radius:50%;background:#fff}
+.progress-number{position:relative;z-index:1;transform:rotate(90deg);font-size:26px;font-weight:800;letter-spacing:-.7px;color:#152333}
+.summary{
+  margin-top:auto;padding:15px 0 13px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  display:grid;gap:8px;
+}
+.summary-row{display:flex;justify-content:space-between;gap:14px;font-size:13px;line-height:1.45}
+.summary-label{color:#84909C;font-weight:700}
+.summary-value{color:#334152;font-weight:800;text-align:right}
+.card-footer{padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:0;color:#667585}
+.card-footer-item{min-width:0;padding:0 12px;text-align:center}
+.card-footer-item+.card-footer-item{border-left:1px solid var(--line)}
+.card-footer-label{display:block;margin-bottom:4px;font-size:11px;color:#8A96A2;font-weight:700}
+.card-footer-value{display:block;font-size:13px;color:#536272;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{padding:50px 20px;text-align:center;color:#7A8794;background:#fff;border:1px dashed #D6E0E8;border-radius:16px}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,30,43,.48);display:none;align-items:center;justify-content:center;padding:28px;z-index:1000}
+.modal-backdrop.open{display:flex}
+.modal{
+  width:min(1740px,98vw);max-height:90vh;overflow:hidden;background:#fff;border-radius:20px;
+  box-shadow:0 24px 70px rgba(5,18,30,.28);display:flex;flex-direction:column;
+}
+.modal-topline{height:6px;background:var(--hug-blue);flex:0 0 auto}
+.modal-header{padding:24px 28px 19px;border-bottom:1px solid var(--line);position:relative}
+.modal-close{
+  position:absolute;right:20px;top:18px;width:38px;height:38px;border:0;border-radius:50%;background:#F1F5F8;
+  color:#536171;cursor:pointer;font-size:22px;display:grid;place-items:center;
+}
+.modal-close:hover{background:#E8EEF3}
+.modal-eyebrow{font-size:13px;font-weight:800;color:var(--hug-blue);margin-bottom:6px;padding-right:50px}
+.modal-title{margin:0;padding-right:50px;font-size:25px;line-height:1.35;font-weight:850;letter-spacing:-.5px}
+.info-line{display:flex;gap:0;flex-wrap:wrap;margin-top:14px;color:#667585;font-size:13px;font-weight:650}
+.info-line span{display:inline-flex;align-items:center}
+.info-line span+span:before{content:"";width:1px;height:13px;background:#D9E1E8;margin:0 13px}
+.modal-body{padding:24px 28px 30px;overflow:auto}
+.block-title{font-size:16px;font-weight:850;margin:0 0 14px;color:#243544}
+.process-matrix{display:grid;grid-template-columns:124px minmax(0,1fr);align-items:start;border:1px solid #E2E9EF;border-radius:13px;background:#fff;overflow:hidden}
+.process-labels{padding-top:58px;background:#F7F9FB;border-right:1px solid #E2E9EF}
+.process-label{display:flex;align-items:center;padding:0 12px;color:#788593;font-size:11px;font-weight:850;white-space:nowrap;border-top:1px solid #E7EDF2}
+.process-label.content{height:48px}
+.process-label.schedule,.process-label.completed{height:42px}
+.timeline-scroll{overflow-x:auto;padding:4px 0 14px;margin:0;background:#fff}
+.timeline{display:flex;align-items:flex-start;min-width:max-content}
+.step{width:310px;flex:0 0 310px;position:relative;text-align:center;padding:0 16px}
+.step:not(:last-child):after{content:"";position:absolute;top:19px;left:calc(50% + 20px);width:calc(100% - 40px);height:3px;background:#DDE4EA;z-index:0}
+.step-dot{width:40px;height:40px;border-radius:50%;margin:0 auto 14px;display:grid;place-items:center;color:#fff;font-weight:900;position:relative;z-index:1;background:var(--waiting);border:4px solid #fff;box-shadow:0 0 0 2px var(--waiting)}
+.step.complete .step-dot{background:var(--hug-green);box-shadow:0 0 0 2px var(--hug-green)}
+.step.ongoing .step-dot{background:var(--hug-sky);box-shadow:0 0 0 2px var(--hug-sky)}
+.step-values{border-left:1px solid #EDF1F4}
+.step:first-child .step-values{border-left:0}
+.step-value{display:flex;align-items:center;justify-content:center;padding:0 10px;color:#536272;font-size:12px;font-weight:750;border-top:1px solid #E7EDF2}
+.step-value.content{height:48px;color:#2F4050;font-size:13px;font-weight:850;white-space:nowrap}
+.step-value.schedule,.step-value.completed{height:42px;white-space:nowrap}
+.step-value.completed{color:#657382}
+.check-summary{padding:15px 17px;margin-bottom:16px;border-radius:12px;background:#F1F8FB;color:#2B536A;font-size:14px;font-weight:800}
+.check-matrix{display:grid;grid-template-columns:124px minmax(0,1fr);align-items:start;border:1px solid #E2E9EF;border-radius:13px;background:#fff;overflow:hidden}
+.check-labels{padding-top:66px;background:#F7F9FB;border-right:1px solid #E2E9EF}
+.check-label{display:flex;align-items:center;padding:0 12px;color:#788593;font-size:11px;font-weight:850;white-space:nowrap;border-top:1px solid #E7EDF2}
+.check-label.content{height:48px}
+.check-label.schedule,.check-label.completed{height:42px}
+.check-list-scroll{overflow-x:auto;padding:4px 0 14px;margin:0;background:#fff}
+.check-list{display:flex;align-items:flex-start;min-width:max-content}
+.check-item{width:310px;flex:0 0 310px;text-align:center;padding:0 16px}
+.check-status-wrap{height:62px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px}
+.check-box{width:30px;height:30px;border-radius:6px;display:grid;place-items:center;font-size:16px;line-height:1;font-weight:900;border:2px solid var(--waiting);background:#fff;color:#fff}
+.check-item.waiting .check-box{border-color:var(--waiting);background:#fff}
+.check-item.ongoing .check-box{border-color:var(--hug-sky);background:var(--hug-sky)}
+.check-item.complete .check-box{border-color:var(--hug-green);background:var(--hug-green)}
+.check-status-text{font-size:11px;font-weight:850;line-height:1;white-space:nowrap;color:#7C8792}
+.check-item.ongoing .check-status-text{color:#087EA4}
+.check-item.complete .check-status-text{color:#5C952A}
+.check-values{border-left:1px solid #EDF1F4}
+.check-item:first-child .check-values{border-left:0}
+.check-value{display:flex;align-items:center;justify-content:center;padding:0 10px;color:#536272;font-size:12px;font-weight:750;border-top:1px solid #E7EDF2}
+.check-value.content{height:48px;color:#2F4050;font-size:13px;font-weight:850;white-space:nowrap}
+.check-value.schedule,.check-value.completed{height:42px;white-space:nowrap}
+.check-value.completed{color:#657382}
+.modal-note{font-size:12px;color:#8A959F;margin-top:12px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#1E2B37;color:#fff;padding:11px 16px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:2000}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:1180px){.card-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:900px){.topbar{align-items:flex-start;flex-direction:column}.filters{justify-content:flex-start}.card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){
+
+  .overview{grid-template-columns:1fr;gap:12px;padding:16px;margin-bottom:28px}.overview-meta{padding:0 0 12px;border-right:0;border-bottom:1px solid var(--line)}
+  .overview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .page{padding:24px 16px 50px}.page-title{font-size:25px}.filters{width:100%}.filter{flex:1 1 140px;min-width:0}
+  .card-grid{grid-template-columns:1fr}.card{min-height:370px}.modal-backdrop{padding:10px}.modal-header,.modal-body{padding-left:18px;padding-right:18px}
+  .modal-title{font-size:21px}.info-line{display:grid;gap:6px}.info-line span+span:before{display:none}
+  .process-matrix{grid-template-columns:110px minmax(0,1fr)}.process-label{padding:0 8px;font-size:10px}.step{width:290px;flex-basis:290px}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.auth-shell{min-height:100vh;display:grid;place-items:center;padding:24px;background:#F3F7FB}
+.auth-card{width:min(460px,100%);background:#fff;border:1px solid #E5EAF0;border-radius:18px;padding:30px;box-shadow:0 14px 38px rgba(0,0,0,.07)}
+.auth-badge{display:inline-block;background:#E8F3FB;color:#0E5D95;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800;margin-bottom:14px}
+.auth-title{font-size:24px;margin:0 0 8px;color:#182433}
+.auth-sub{color:#6D7885;font-size:14px;line-height:1.6;margin-bottom:22px}
+.auth-screen{display:none}.auth-screen.active{display:block}
+.auth-card label{display:block;font-size:14px;font-weight:800;margin:14px 0 7px}
+.auth-card input{width:100%;height:46px;border:1px solid #CFD5DD;border-radius:10px;padding:0 12px;font-size:15px}
+.auth-card input:focus{outline:2px solid rgba(28,117,188,.18);border-color:#1C75BC}
+.auth-btn{width:100%;height:46px;border:0;border-radius:10px;background:#1C75BC;color:white;font-weight:800;font-size:15px;cursor:pointer;margin-top:16px}
+.auth-btn.secondary{background:#EEF2F7;color:#182433}
+.auth-msg{display:none;margin-top:14px;border-radius:10px;padding:11px 12px;font-size:13px;line-height:1.5}
+.auth-msg.show{display:block}.auth-msg.error{background:#FFF1F2;color:#9F1239}.auth-msg.ok{background:#ECFDF5;color:#166534}
+.auth-qr{text-align:center;margin:18px 0}.auth-qr img{max-width:220px;width:100%;border:1px solid #E5EAF0;padding:10px;background:#fff;border-radius:12px}
+.auth-secret{word-break:break-all;background:#F3F4F6;padding:10px;border-radius:8px;font-family:monospace;font-size:12px}
+.app-hidden{display:none!important}
+.user-strip{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:-14px 0 20px;color:#6D7885;font-size:13px}
+.user-role{font-weight:800;color:#1C75BC}.mini-btn{height:34px;padding:0 12px;border:1px solid #DCE4EC;border-radius:9px;background:#fff;color:#334152;cursor:pointer}
+.loading-overlay{position:fixed;inset:0;background:rgba(243,247,251,.88);display:none;place-items:center;z-index:3000;font-weight:800;color:#153B59}.loading-overlay.show{display:grid}
+</style>
 </head>
 <body>
-<div class="wrap">
-  <main class="card">
-    <div class="badge">v5.0 인증 테스트</div>
-    <h1>주택 신속 공급대책 과제 현황판</h1>
-    <div class="sub">허용된 사용자만 로그인할 수 있습니다. 로그인 후 MFA 인증을 완료해야 현황판에 접근할 수 있습니다.</div>
+<div id="authRoot" class="auth-shell">
+  <main class="auth-card">
+    <div class="auth-badge">운영용 v5.0 · v3.2</div>
+    <h1 class="auth-title">주택 신속 공급대책 과제 현황판</h1>
+    <div class="auth-sub">허용된 사용자만 로그인할 수 있습니다. Google Authenticator MFA 인증을 완료해야 업무 데이터에 접근할 수 있습니다.</div>
 
-    <section id="configScreen" class="screen active">
-      <h2 style="font-size:18px">최초 1회 연결 설정</h2>
-      <div class="sub">아래 Publishable key는 브라우저용 공개 키입니다. Secret key / service_role key는 절대 입력하지 마세요.</div>
-      <label for="pubKey">Supabase Publishable key</label>
-      <input id="pubKey" type="password" autocomplete="off" placeholder="sb_publishable_..." />
-      <button id="saveConfigBtn">이 브라우저에서 연결</button>
-      <div class="note">보안상 이 테스트 파일에는 키를 미리 넣지 않았습니다. 현재 브라우저의 sessionStorage에만 저장되며 브라우저를 닫으면 사라집니다.</div>
-      <div id="configMsg" class="msg"></div>
-    </section>
-
-    <section id="loginScreen" class="screen">
+    <section id="loginScreen" class="auth-screen active">
       <h2 style="font-size:18px">로그인</h2>
-      <label for="email">이메일</label>
-      <input id="email" type="email" autocomplete="username" />
-      <label for="password">비밀번호</label>
-      <input id="password" type="password" autocomplete="current-password" />
-      <button id="loginBtn">로그인</button>
-      <div id="loginMsg" class="msg"></div>
+      <label for="email">이메일</label><input id="email" type="email" autocomplete="username">
+      <label for="password">비밀번호</label><input id="password" type="password" autocomplete="current-password">
+      <button id="loginBtn" class="auth-btn">로그인</button><div id="loginMsg" class="auth-msg"></div>
     </section>
 
-    <section id="passwordScreen" class="screen">
+    <section id="passwordScreen" class="auth-screen">
       <h2 style="font-size:18px">최초 비밀번호 설정</h2>
-      <div class="sub">초대받은 계정의 비밀번호를 설정합니다.</div>
-      <label for="newPassword">새 비밀번호</label>
-      <input id="newPassword" type="password" autocomplete="new-password" minlength="12" />
-      <label for="newPassword2">새 비밀번호 확인</label>
-      <input id="newPassword2" type="password" autocomplete="new-password" minlength="12" />
-      <button id="setPasswordBtn">비밀번호 설정</button>
-      <div class="note">테스트 버전에서는 12자 이상을 요구합니다. 운영 전에는 Supabase 비밀번호 정책도 별도로 확인합니다.</div>
-      <div id="passwordMsg" class="msg"></div>
+      <div class="auth-sub">초대받은 계정의 현황판 로그인 비밀번호를 설정합니다.</div>
+      <label for="newPassword">새 비밀번호</label><input id="newPassword" type="password" autocomplete="new-password" minlength="12">
+      <label for="newPassword2">새 비밀번호 확인</label><input id="newPassword2" type="password" autocomplete="new-password" minlength="12">
+      <button id="setPasswordBtn" class="auth-btn">비밀번호 설정</button><div id="passwordMsg" class="auth-msg"></div>
     </section>
 
-    <section id="enrollScreen" class="screen">
+    <section id="enrollScreen" class="auth-screen">
       <h2 style="font-size:18px">Google Authenticator 등록</h2>
-      <div class="sub">QR코드를 Google Authenticator로 스캔한 뒤 표시되는 6자리 코드를 입력하세요.</div>
-      <div class="qrbox"><img id="qrImg" alt="MFA QR code" /></div>
-      <div id="manualSecretWrap" style="display:none">
-        <label>QR 스캔이 안 될 때 수동 등록키</label>
-        <div id="manualSecret" class="secret"></div>
-      </div>
-      <label for="enrollCode">6자리 인증번호</label>
-      <input id="enrollCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000" />
-      <button id="enrollVerifyBtn">등록 및 인증</button>
-      <div id="enrollMsg" class="msg"></div>
+      <div class="auth-sub">QR코드를 스캔한 뒤 앱에 표시되는 6자리 코드를 입력하세요.</div>
+      <div class="auth-qr"><img id="qrImg" alt="MFA QR code"></div>
+      <div id="manualSecretWrap" style="display:none"><label>수동 등록키</label><div id="manualSecret" class="auth-secret"></div></div>
+      <label for="enrollCode">6자리 인증번호</label><input id="enrollCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+      <button id="enrollVerifyBtn" class="auth-btn">등록 및 인증</button><div id="enrollMsg" class="auth-msg"></div>
     </section>
 
-    <section id="aal1TestScreen" class="screen">
-      <h2 style="font-size:18px">MFA 전 DB 접근 차단 테스트</h2>
-      <div class="sub">비밀번호 로그인만 완료된 AAL1 상태에서 metrics 조회를 시도합니다. 정상이라면 업무 데이터가 조회되지 않아야 합니다.</div>
-      <div id="aal1Result" style="margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#f9fafb;line-height:1.7;font-size:14px;">
-        테스트 중입니다...
-      </div>
-      <button id="continueMfaBtn" style="display:none">MFA 인증 계속</button>
-    </section>
-
-    <section id="mfaScreen" class="screen">
+    <section id="mfaScreen" class="auth-screen">
       <h2 style="font-size:18px">MFA 인증</h2>
-      <div class="sub">Google Authenticator에 표시되는 6자리 코드를 입력하세요.</div>
-      <label for="mfaCode">6자리 인증번호</label>
-      <input id="mfaCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000" />
-      <button id="mfaVerifyBtn">인증</button>
-      <div id="mfaMsg" class="msg"></div>
-    </section>
-
-    <section id="readyScreen" class="screen">
-      <h2 style="font-size:18px">인증 완료</h2>
-      <div class="msg ok show">이메일 + MFA(AAL2) 인증까지 정상적으로 완료되었습니다.</div>
-      <div id="profileBox" style="margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#f9fafb;line-height:1.7;font-size:14px;">
-        사용자 권한을 확인하는 중입니다...
-      </div>
-      <div id="metricsBox" style="margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#f9fafb;line-height:1.7;font-size:14px;">
-        지표 조회를 확인하는 중입니다...
-      </div>
-      <div id="itemsBox" style="margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#f9fafb;line-height:1.7;font-size:14px;">
-        P-01-1 단계 데이터를 확인하는 중입니다...
-      </div>
-      <div class="sub" style="margin-top:16px">현재는 profiles, metrics, metric_items 세 테이블만 Data API에 공개한 상태입니다. audit_logs와 app_settings는 아직 공개하지 않았습니다.</div>
-      <button id="logoutBtn" class="secondary">로그아웃</button>
+      <div class="auth-sub">Google Authenticator에 표시되는 6자리 인증번호를 입력하세요.</div>
+      <label for="mfaCode">6자리 인증번호</label><input id="mfaCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+      <button id="mfaVerifyBtn" class="auth-btn">인증</button><div id="mfaMsg" class="auth-msg"></div>
     </section>
   </main>
 </div>
+<div id="loadingOverlay" class="loading-overlay">현황 데이터를 불러오는 중입니다...</div>
+<div id="appRoot" class="app-hidden">
+<div class="page">
+  <header class="topbar">
+    <div class="title-wrap">
+      <h1 class="page-title">주택 신속 공급대책 과제 현황판</h1>
+      <p class="page-subtitle" id="subtitle"></p>
+    </div>
+    <div class="filters" aria-label="현황 필터">
+      <select class="filter" id="departmentFilter" aria-label="담당부서 필터"><option value="">담당부서 전체</option></select>
+      <select class="filter" id="measurementFilter" aria-label="측정방식 필터"><option value="">측정방식 전체</option></select>
+      <select class="filter" id="statusFilter" aria-label="진행상태 필터"><option value="">진행상태 전체</option><option value="진행중">진행중</option><option value="대기">대기</option><option value="완료">완료</option></select>
+    </div>
+  </header>
 
+  <section class="overview" aria-label="전체 요약">
+    <div class="overview-meta">
+      <div class="overview-title">전체 요약</div>
+      <div class="overview-date">데이터 기준일 <strong id="dataReferenceDate"></strong></div>
+    </div>
+    <div class="overview-stats">
+      <div class="overview-stat"><span class="stat-label">전체</span><strong id="overviewTotal">0</strong><span class="stat-unit">개</span></div>
+      <div class="overview-stat complete"><span class="stat-label">완료</span><strong id="overviewComplete">0</strong><span class="stat-unit">개</span></div>
+      <div class="overview-stat ongoing"><span class="stat-label">진행중</span><strong id="overviewOngoing">0</strong><span class="stat-unit">개</span></div>
+      <div class="overview-stat waiting"><span class="stat-label">대기</span><strong id="overviewWaiting">0</strong><span class="stat-unit">개</span></div>
+    </div>
+  </section>
+  <main id="dashboard"></main>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="modal-topline"></div>
+    <div class="modal-header">
+      <button class="modal-close" type="button" aria-label="닫기" id="modalClose">×</button>
+      <div class="modal-eyebrow" id="modalEyebrow"></div>
+      <h2 class="modal-title" id="modalTitle"></h2>
+      <div class="info-line" id="modalInfo"></div>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast">계량 지표는 상세 팝업 대상이 아닙니다.</div>
+
+</div>
 <script>
-(() => {
-  const SUPABASE_URL = 'https://vhrytlptivwyukgefywd.supabase.co';
-  const KEY_STORAGE = 'monitoring_hug_publishable_key';
-  let sb = null;
-  let enrollFactorId = null;
+let RAW_DATA = [];
+let DATA_REFERENCE_DATE = "-";
 
-  const $ = id => document.getElementById(id);
-  const screens = ['configScreen','loginScreen','passwordScreen','enrollScreen','aal1TestScreen','mfaScreen','readyScreen'];
+const COLORS = {blue:'#1C75BC', sky:'#009ED1', green:'#80C342', gray:'#C7CFD8'};
 
-  function show(id){
-    screens.forEach(x => $(x).classList.toggle('active', x === id));
+function safe(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
+function parseNumber(text){
+  const m=String(text ?? '').replace(/,/g,'').match(/-?\d+(?:\.\d+)?/);
+  return m ? Number(m[0]) : 0;
+}
+function progress(card){
+  if(card.measurement==='계량'){
+    const target=parseNumber(card.items[0]?.content), current=parseNumber(card.items[0]?.status);
+    if(!target) return 0;
+    return Math.max(0, Math.round((current/target)*100));
   }
-  function message(id, text, ok=false){
-    const el=$(id); el.textContent=text; el.className='msg show ' + (ok?'ok':'error');
-  }
-  function clearMessage(id){ const el=$(id); el.textContent=''; el.className='msg'; }
-  function cleanAuthHash(){
-    if (location.hash && (location.hash.includes('access_token=') || location.hash.includes('error='))) {
-      history.replaceState(null, '', location.pathname + location.search);
+  const total=card.items.length;
+  if(!total) return 0;
+  const done=card.items.filter(x=>x.status==='완료').length;
+  return Math.round((done/total)*100);
+}
+function cardStatus(card){
+  const p=progress(card);
+  if(p>=100) return '완료';
+  if(card.measurement==='계량') return p>0 ? '진행중' : '대기';
+  if(card.items.some(x=>x.status==='진행중') || p>0) return '진행중';
+  return '대기';
+}
+
+function renderOverview(){
+  const counts={완료:0,진행중:0,대기:0};
+  RAW_DATA.forEach(card=>{ const s=cardStatus(card); if(counts[s]!==undefined) counts[s]++; });
+  document.getElementById('dataReferenceDate').textContent=DATA_REFERENCE_DATE || '-';
+  document.getElementById('overviewTotal').textContent=RAW_DATA.length;
+  document.getElementById('overviewComplete').textContent=counts['완료'];
+  document.getElementById('overviewOngoing').textContent=counts['진행중'];
+  document.getElementById('overviewWaiting').textContent=counts['대기'];
+}
+
+function ringColor(p){ return p>=100 ? COLORS.green : (p>0 ? COLORS.sky : COLORS.gray); }
+function measureSummary(card){
+  const item=card.items[0] || {};
+  if(card.measurement==='계량') return {target:item.content || '-', actual:item.status || '-'};
+
+  if(card.measurement==='비계량-단계'){
+    const targetItem=card.items.length ? card.items[card.items.length-1] : null;
+    let actualItem=null;
+    for(let i=card.items.length-1;i>=0;i--){
+      if(card.items[i].status==='완료'){ actualItem=card.items[i]; break; }
     }
+    return {
+      target:(targetItem && targetItem.content) ? targetItem.content : '-',
+      actual:(actualItem && actualItem.content) ? actualItem.content : '완료 단계 없음'
+    };
   }
-  function isInviteReturn(){
-    return location.hash.includes('type=invite') || location.search.includes('type=invite') || location.hash.includes('access_token=');
+
+  const done=card.items.filter(x=>x.status==='완료').length;
+  return {target:`${card.items.length}항목`, actual:`${done}항목 완료`};
+}
+function scheduleSummary(card){
+  const raw=card.items.map(x=>x.schedule).filter(Boolean).join(' ');
+  const vals=[];
+  for(const m of raw.matchAll(/(\d{2})\.(\d{1,2})월/g)) vals.push({y:+m[1],m:+m[2]});
+  for(const m of raw.matchAll(/(\d{2})년(?!\s*목표)/g)) vals.push({y:+m[1],m:12});
+  if(vals.length){
+    vals.sort((a,b)=>a.y-b.y||a.m-b.m);
+    const a=vals[0], b=vals[vals.length-1];
+    const fmt=v=>`${v.y}.${v.m}월`;
+    return a.y===b.y && a.m===b.m ? fmt(a) : `${fmt(a)} ~ ${fmt(b)}`;
   }
-  function initClient(key){
-    sb = supabase.createClient(SUPABASE_URL, key, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
+  const uniq=[...new Set(card.items.map(x=>x.schedule).filter(Boolean))];
+  return uniq.length ? uniq.join(', ') : '-';
+}
+function completionDue(card){
+  let best=null;
+  for(const item of card.items){
+    const s=String(item.schedule||'').trim();
+    if(!s) continue;
+    const months=[...s.matchAll(/(\d{2})\.(\d{1,2})월/g)].map(m=>({y:+m[1],m:+m[2]}));
+    let candidate=null;
+    if(months.length){
+      months.sort((a,b)=>a.y-b.y||a.m-b.m);
+      const last=months[months.length-1];
+      candidate={y:last.y,m:last.m,label:`${last.y}.${last.m}월`};
+    }else{
+      const ym=s.match(/(\d{2})년/);
+      if(ym){
+        candidate={y:+ym[1],m:12,label:s.includes('내')?`${ym[1]}년 내`:`${ym[1]}년`};
       }
+    }
+    if(candidate && (!best || candidate.y>best.y || (candidate.y===best.y && candidate.m>best.m))) best=candidate;
+  }
+  if(best) return best.label;
+  const fallback=[...card.items].reverse().find(x=>x.schedule);
+  return fallback ? fallback.schedule : '-';
+}
+function statusClass(s){ return s==='완료'?'complete':s==='진행중'?'ongoing':'waiting'; }
+function checkSymbol(s){ return s==='완료'?'✓':s==='진행중'?'⌛︎':''; }
+
+let order=[];
+function resetSelect(id, firstLabel){
+  const el=document.getElementById(id);
+  el.innerHTML=`<option value="">${firstLabel}</option>`;
+}
+function fillSelect(id, values){
+  const el=document.getElementById(id);
+  values.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;el.appendChild(o);});
+}
+function rebuildFilters(){
+  order=[...new Set(RAW_DATA.map(x=>x.category))];
+  const depts=[...new Set(RAW_DATA.flatMap(x=>String(x.department||'').split(' / ')).filter(Boolean))].sort();
+  const measures=[...new Set(RAW_DATA.map(x=>x.measurement).filter(Boolean))];
+  resetSelect('departmentFilter','담당부서 전체');
+  resetSelect('measurementFilter','측정방식 전체');
+  fillSelect('departmentFilter',depts);
+  fillSelect('measurementFilter',measures);
+}
+
+const filters={department:'',measurement:'',status:''};
+['departmentFilter','measurementFilter','statusFilter'].forEach(id=>document.getElementById(id).addEventListener('change',e=>{
+  filters[id==='departmentFilter'?'department':id==='measurementFilter'?'measurement':'status']=e.target.value;render();
+}));
+
+function cardHTML(card){
+  const p=progress(card), sm=measureSummary(card), clickable=card.measurement!=='계량';
+  return `<article class="card ${clickable?'is-clickable':''}" tabindex="${clickable?'0':'-1'}" data-id="${safe(card.id)}" ${clickable?'role="button" aria-label="'+safe(card.detail)+' 상세보기"':''}>
+    <div class="card-head">
+      <div class="metric-name">${safe(card.metric)}</div>
+      <div class="measure-tag">${safe(card.measurement)}</div>
+    </div>
+    <div class="detail-title">${safe(card.detail)}</div>
+    <div class="progress-wrap">
+      <div class="progress-ring" style="--pct:${Math.min(p,100)}%;--ring:${ringColor(p)}"><div class="progress-number">${p}%</div></div>
+    </div>
+    <div class="summary">
+      <div class="summary-row"><span class="summary-label">목표</span><span class="summary-value">${safe(sm.target)}</span></div>
+      <div class="summary-row"><span class="summary-label">실적</span><span class="summary-value">${safe(sm.actual)}</span></div>
+    </div>
+    <div class="card-footer">
+      <div class="card-footer-item"><span class="card-footer-label">담당부서</span><span class="card-footer-value">${safe(card.department)}</span></div>
+      <div class="card-footer-item"><span class="card-footer-label">완료예정월</span><span class="card-footer-value">${safe(completionDue(card))}</span></div>
+    </div>
+  </article>`;
+}
+function render(){
+  const list=RAW_DATA.filter(c=>(!filters.department||String(c.department||'').split(' / ').includes(filters.department))&&(!filters.measurement||c.measurement===filters.measurement)&&(!filters.status||cardStatus(c)===filters.status));
+  const root=document.getElementById('dashboard');
+  const sectionHTML=order.map(cat=>{
+    const cards=list.filter(c=>c.category===cat);
+    if(!cards.length) return '';
+    return `<section class="section"><div class="section-heading"><div class="section-title">${safe(cat)}</div><span class="section-count">${cards.length}개</span></div><div class="card-grid">${cards.map(cardHTML).join('')}</div></section>`;
+  }).join('');
+  root.innerHTML=sectionHTML || '<div class="empty">선택한 조건에 해당하는 과제가 없습니다.</div>';
+  document.getElementById('subtitle').textContent=`총 ${RAW_DATA.length}개 과제 · 현재 ${list.length}개 표시`;
+  root.querySelectorAll('.is-clickable').forEach(el=>{
+    el.addEventListener('click',()=>openModal(el.dataset.id));
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openModal(el.dataset.id);}});
+  });
+}
+
+const backdrop=document.getElementById('modalBackdrop');
+const closeBtn=document.getElementById('modalClose');
+function openModal(id){
+  const card=RAW_DATA.find(c=>c.id===id); if(!card || card.measurement==='계량') return;
+  const p=progress(card);
+  document.getElementById('modalEyebrow').textContent=card.metric;
+  document.getElementById('modalTitle').textContent=card.detail;
+  document.getElementById('modalInfo').innerHTML=`<span>담당부서&nbsp; <strong>${safe(card.department)}</strong></span><span>추진일정&nbsp; <strong>${safe(scheduleSummary(card))}</strong></span><span>진척도&nbsp; <strong>${p}%</strong></span>`;
+  document.getElementById('modalBody').innerHTML=card.measurement==='비계량-체크'?checkBody(card,p):stepBody(card,p);
+  if(card.measurement==='비계량-단계') requestAnimationFrame(fitStepWidths);
+  if(card.measurement==='비계량-체크') requestAnimationFrame(fitCheckWidths);
+  backdrop.classList.add('open');
+  document.body.style.overflow='hidden';
+  closeBtn.focus();
+}
+function closeModal(){backdrop.classList.remove('open');document.body.style.overflow='';}
+closeBtn.addEventListener('click',closeModal);
+backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&backdrop.classList.contains('open'))closeModal();});
+
+function fitStepWidths(){
+  const body=document.getElementById('modalBody');
+  const contents=[...body.querySelectorAll('.step-value.content')];
+  if(!contents.length) return;
+  const width=Math.max(270,...contents.map(el=>Math.ceil(el.scrollWidth+36)));
+  body.querySelectorAll('.step').forEach(el=>{
+    el.style.width=`${width}px`;
+    el.style.flexBasis=`${width}px`;
+  });
+}
+
+function fitCheckWidths(){
+  const body=document.getElementById('modalBody');
+  const contents=[...body.querySelectorAll('.check-value.content')];
+  if(!contents.length) return;
+  const width=Math.max(270,...contents.map(el=>Math.ceil(el.scrollWidth+36)));
+  body.querySelectorAll('.check-item').forEach(el=>{
+    el.style.width=`${width}px`;
+    el.style.flexBasis=`${width}px`;
+  });
+}
+
+function stepBody(card,p){
+  const timeline=card.items.map((x,i)=>`<div class="step ${statusClass(x.status)}">
+    <div class="step-dot">${i+1}</div>
+    <div class="step-values">
+      <div class="step-value content">${safe(x.content||'-')}</div>
+      <div class="step-value schedule">${safe(x.schedule||'-')}</div>
+      <div class="step-value completed">${safe(x.completedDate||'-')}</div>
+    </div>
+  </div>`).join('');
+  return `<h3 class="block-title">프로세스 진행 현황</h3>
+  <div class="process-matrix">
+    <div class="process-labels" aria-hidden="true">
+      <div class="process-label content">추진내용</div>
+      <div class="process-label schedule">추진일정(계획)</div>
+      <div class="process-label completed">완료일자</div>
+    </div>
+    <div class="timeline-scroll"><div class="timeline">${timeline}</div></div>
+  </div>`;
+}
+function checkBody(card,p){
+  const done=card.items.filter(x=>x.status==='완료').length;
+  const items=card.items.map(x=>`<div class="check-item ${statusClass(x.status)}">
+    <div class="check-status-wrap">
+      <div class="check-box">${checkSymbol(x.status)}</div>
+      <div class="check-status-text">${safe(x.status||'대기')}</div>
+    </div>
+    <div class="check-values">
+      <div class="check-value content">${safe(x.content||'-')}</div>
+      <div class="check-value schedule">${safe(x.schedule||'-')}</div>
+      <div class="check-value completed">${safe(x.completedDate||'-')}</div>
+    </div>
+  </div>`).join('');
+  return `<div class="check-summary">전체 ${card.items.length}항목 중 ${done}항목 완료 (${p}%)</div>
+  <h3 class="block-title">이행 체크 현황</h3>
+  <div class="check-matrix">
+    <div class="check-labels" aria-hidden="true">
+      <div class="check-label content">추진내용</div>
+      <div class="check-label schedule">추진일정(계획)</div>
+      <div class="check-label completed">완료일자</div>
+    </div>
+    <div class="check-list-scroll"><div class="check-list">${items}</div></div>
+  </div>`;
+}
+// ===== Supabase 운영 연결 =====
+const SUPABASE_URL = 'https://vhrytlptivwyukgefywd.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_zXLV4ps7jJ51h5K-fSM1Fg_jwv-VxPb';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+});
+let currentProfile=null;
+let refreshTimer=null;
+let enrollFactorId=null;
+
+function authShow(id){
+  ['loginScreen','passwordScreen','enrollScreen','mfaScreen'].forEach(x=>document.getElementById(x).classList.toggle('active',x===id));
+}
+function authMsg(id,text,ok=false){const el=document.getElementById(id);el.textContent=text;el.className='auth-msg show '+(ok?'ok':'error');}
+function authMsgClear(id){const el=document.getElementById(id);el.textContent='';el.className='auth-msg';}
+function isInviteReturn(){return location.hash.includes('type=invite')||location.search.includes('type=invite')||location.hash.includes('access_token=');}
+function cleanAuthHash(){if(location.hash&&(location.hash.includes('access_token=')||location.hash.includes('error=')))history.replaceState(null,'',location.pathname+location.search);}
+function fmtDate(v){if(!v)return ''; const d=new Date(v); if(Number.isNaN(d.getTime()))return String(v); return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(d).replace(/\. /g,'.').replace(/\.$/,'');}
+function fmtDbDate(v){if(!v)return ''; const [y,m,d]=String(v).split('-'); return y&&m&&d?`${y.slice(2)}.${m}.${d}`:String(v);}
+function numText(v,unit){if(v===null||v===undefined||v==='')return '-'; const n=Number(v); const t=Number.isFinite(n)?n.toLocaleString('ko-KR'):String(v); return `${t}${unit||''}`;}
+
+async function requireAal2(){
+  const {data:aal,error}=await sb.auth.mfa.getAuthenticatorAssuranceLevel(); if(error)throw error;
+  return aal.currentLevel==='aal2';
+}
+async function loadProfile(){
+  const {data:{user},error:uerr}=await sb.auth.getUser(); if(uerr)throw uerr; if(!user)throw new Error('로그인 사용자를 확인할 수 없습니다.');
+  const {data,error}=await sb.from('profiles').select('display_name,role,is_active').eq('id',user.id).single(); if(error)throw error;
+  if(!data?.is_active){await sb.auth.signOut();throw new Error('비활성화된 사용자입니다.');}
+  currentProfile={...data,email:user.email}; return currentProfile;
+}
+
+async function loadDashboardData(){
+  if(!(await requireAal2())) throw new Error('MFA 인증이 필요합니다.');
+  document.getElementById('loadingOverlay').classList.add('show');
+  try{
+    const [mRes,iRes]=await Promise.all([
+      sb.from('metrics').select('id,indicator_id,category,metric_name,detail_name,responsible_departments,measurement_type,metric_schedule,quant_target,quant_current,quant_unit,sort_order,is_active,updated_at').eq('is_active',true).order('sort_order',{ascending:true}),
+      sb.from('metric_items').select('id,metric_id,item_order,content,status,planned_schedule,completion_date,updated_at').order('item_order',{ascending:true})
+    ]);
+    if(mRes.error)throw mRes.error; if(iRes.error)throw iRes.error;
+    const byMetric=new Map();
+    (iRes.data||[]).forEach(it=>{if(!byMetric.has(it.metric_id))byMetric.set(it.metric_id,[]);byMetric.get(it.metric_id).push(it);});
+    RAW_DATA=(mRes.data||[]).map(m=>{
+      let items=[];
+      if(m.measurement_type==='계량'){
+        items=[{content:numText(m.quant_target,m.quant_unit),status:numText(m.quant_current,m.quant_unit),schedule:m.metric_schedule||'',completedDate:''}];
+      }else{
+        items=(byMetric.get(m.id)||[]).map(it=>({content:it.content,status:it.status,schedule:it.planned_schedule||'',completedDate:fmtDbDate(it.completion_date)}));
+      }
+      return {id:m.indicator_id,category:m.category,metric:m.metric_name,detail:m.detail_name,department:(m.responsible_departments||[]).join(' / '),measurement:m.measurement_type,items};
     });
+    const stamps=[...(mRes.data||[]).map(x=>x.updated_at),...(iRes.data||[]).map(x=>x.updated_at)].filter(Boolean).map(x=>new Date(x)).filter(x=>!Number.isNaN(x.getTime()));
+    DATA_REFERENCE_DATE=stamps.length?fmtDate(new Date(Math.max(...stamps.map(d=>d.getTime())))):'-';
+    rebuildFilters(); renderOverview(); render();
+  } finally {document.getElementById('loadingOverlay').classList.remove('show');}
+}
+
+async function enterApp(){
+  if(!(await requireAal2())){await routeAfterFirstFactor();return;}
+  const p=await loadProfile();
+  document.getElementById('authRoot').classList.add('app-hidden');
+  document.getElementById('appRoot').classList.remove('app-hidden');
+  const strip=document.createElement('div');strip.className='user-strip';
+  const roleLabel={viewer:'조회자',editor:'부서 담당자',admin:'기획조정실'}[p.role]||p.role;
+  strip.innerHTML=`<span>${safe(p.display_name||p.email||'')}</span><span class="user-role">${safe(roleLabel)}</span><button id="appLogoutBtn" class="mini-btn">로그아웃</button>`;
+  document.querySelector('.page').insertBefore(strip,document.querySelector('.page').firstChild);
+  document.getElementById('appLogoutBtn').addEventListener('click',async()=>{await sb.auth.signOut();location.reload();});
+  await loadDashboardData();
+  clearInterval(refreshTimer);refreshTimer=setInterval(()=>loadDashboardData().catch(console.error),60000);
+}
+
+async function routeAfterFirstFactor(){
+  const {data:factorsData,error:factorsError}=await sb.auth.mfa.listFactors(); if(factorsError)throw factorsError;
+  const verified=(factorsData?.totp||[]).filter(f=>f.status==='verified');
+  if(verified.length===0){
+    const {data,error}=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'monitoring-hug'}); if(error)throw error;
+    enrollFactorId=data.id; const qr=data?.totp?.qr_code||'';
+    document.getElementById('qrImg').src=qr.startsWith('data:image')?qr:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(qr);
+    if(data?.totp?.secret){document.getElementById('manualSecret').textContent=data.totp.secret;document.getElementById('manualSecretWrap').style.display='block';}
+    authShow('enrollScreen'); return;
   }
+  const {data:aal,error:aalError}=await sb.auth.mfa.getAuthenticatorAssuranceLevel(); if(aalError)throw aalError;
+  if(aal.currentLevel==='aal2') await enterApp(); else {window._verifiedFactorId=verified[0].id;authShow('mfaScreen');}
+}
 
+document.getElementById('loginBtn').addEventListener('click',async()=>{
+  authMsgClear('loginMsg');const email=document.getElementById('email').value.trim(),password=document.getElementById('password').value;
+  if(!email||!password)return authMsg('loginMsg','이메일과 비밀번호를 입력하세요.');
+  try{const {error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;await routeAfterFirstFactor();}catch(e){authMsg('loginMsg',e.message||String(e));}
+});
+document.getElementById('setPasswordBtn').addEventListener('click',async()=>{
+  authMsgClear('passwordMsg');const p1=document.getElementById('newPassword').value,p2=document.getElementById('newPassword2').value;
+  if(p1.length<12)return authMsg('passwordMsg','비밀번호는 12자 이상으로 입력하세요.'); if(p1!==p2)return authMsg('passwordMsg','비밀번호 확인이 일치하지 않습니다.');
+  try{const {error}=await sb.auth.updateUser({password:p1});if(error)throw error;await routeAfterFirstFactor();}catch(e){authMsg('passwordMsg',e.message||String(e));}
+});
+document.getElementById('enrollVerifyBtn').addEventListener('click',async()=>{
+  authMsgClear('enrollMsg');const code=document.getElementById('enrollCode').value.trim();if(!/^\d{6}$/.test(code))return authMsg('enrollMsg','6자리 숫자를 입력하세요.');
+  try{const {error}=await sb.auth.mfa.challengeAndVerify({factorId:enrollFactorId,code});if(error)throw error;await enterApp();}catch(e){authMsg('enrollMsg',e.message||String(e));}
+});
+document.getElementById('mfaVerifyBtn').addEventListener('click',async()=>{
+  authMsgClear('mfaMsg');const code=document.getElementById('mfaCode').value.trim();if(!/^\d{6}$/.test(code))return authMsg('mfaMsg','6자리 숫자를 입력하세요.');
+  try{const {error}=await sb.auth.mfa.challengeAndVerify({factorId:window._verifiedFactorId,code});if(error)throw error;await enterApp();}catch(e){authMsg('mfaMsg',e.message||String(e));}
+});
 
-  async function loadCurrentProfile(){
-    const { data: { user }, error: userError } = await sb.auth.getUser();
-    if (userError) throw userError;
-    if (!user) throw new Error('로그인 사용자를 확인할 수 없습니다.');
-
-    const { data, error } = await sb
-      .from('profiles')
-      .select('display_name, role, is_active')
-      .eq('id', user.id)
-      .single();
-
-    if (error) throw error;
-    if (!data) throw new Error('사용자 프로필을 찾을 수 없습니다.');
-
-    const roleLabel = {
-      viewer: '조회자',
-      editor: '부서 담당자',
-      admin: '기획조정실'
-    }[data.role] || data.role;
-
-    $('profileBox').innerHTML =
-      '<strong>사용자:</strong> ' + (data.display_name || user.email || '-') + '<br>' +
-      '<strong>권한:</strong> ' + roleLabel + ' (' + data.role + ')<br>' +
-      '<strong>계정 상태:</strong> ' + (data.is_active ? '사용 가능' : '비활성');
-
-    if (!data.is_active) {
-      throw new Error('비활성화된 사용자입니다.');
-    }
-  }
-
-
-  async function loadMetricsPreview(){
-    const { data, error, count } = await sb
-      .from('metrics')
-      .select('indicator_id, metric_name, detail_name, measurement_type', { count: 'exact' })
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true })
-      .limit(5);
-
-    if (error) throw error;
-
-    const rows = (data || []).map(m =>
-      '<li><strong>' + m.indicator_id + '</strong> · ' +
-      m.metric_name + ' / ' + m.detail_name +
-      ' <span style="color:#6b7280">(' + m.measurement_type + ')</span></li>'
-    ).join('');
-
-    $('metricsBox').innerHTML =
-      '<strong>metrics 조회 성공</strong><br>' +
-      '활성 지표 수: <strong>' + (count ?? '-') + '</strong><br>' +
-      '<div style="margin-top:8px">앞의 최대 5개 지표:</div>' +
-      '<ol style="margin:6px 0 0 20px;padding:0">' + (rows || '<li>조회된 지표 없음</li>') + '</ol>';
-  }
-
-  async function showReady(){
-    show('readyScreen');
-    $('profileBox').textContent = '사용자 권한을 확인하는 중입니다...';
-    try{
-      await loadCurrentProfile();
-    }catch(e){
-      $('profileBox').innerHTML =
-        '<span style="color:#9f1239"><strong>프로필 조회 실패:</strong> ' +
-        String(e.message || e) + '</span>';
-    }
-
-    $('metricsBox').textContent = '지표 조회를 확인하는 중입니다...';
-    try{
-      await loadMetricsPreview();
-    }catch(e){
-      $('metricsBox').innerHTML =
-        '<span style="color:#9f1239"><strong>metrics 조회 실패:</strong> ' +
-        String(e.message || e) + '</span>';
-    }
-
-    $('itemsBox').textContent = 'P-01-1 단계 데이터를 확인하는 중입니다...';
-    try{
-      await loadP011Items();
-    }catch(e){
-      $('itemsBox').innerHTML =
-        '<span style="color:#9f1239"><strong>metric_items 조회 실패:</strong> ' +
-        String(e.message || e) + '</span>';
-    }
-  }
-
-
-
-  async function loadP011Items(){
-    const { data: metric, error: metricError } = await sb
-      .from('metrics')
-      .select('id, indicator_id')
-      .eq('indicator_id', 'P-01-1')
-      .single();
-
-    if (metricError) throw metricError;
-    if (!metric) throw new Error('P-01-1 지표를 찾을 수 없습니다.');
-
-    const { data, error } = await sb
-      .from('metric_items')
-      .select('item_order, content, status, planned_schedule, completion_date')
-      .eq('metric_id', metric.id)
-      .order('item_order', { ascending: true });
-
-    if (error) throw error;
-
-    const rows = (data || []).map(item => {
-      const completed = item.completion_date || '-';
-      const schedule = item.planned_schedule || '-';
-      return '<tr>' +
-        '<td style="padding:7px;border-bottom:1px solid #e5e7eb;text-align:center">' + item.item_order + '</td>' +
-        '<td style="padding:7px;border-bottom:1px solid #e5e7eb">' + item.content + '</td>' +
-        '<td style="padding:7px;border-bottom:1px solid #e5e7eb;text-align:center">' + item.status + '</td>' +
-        '<td style="padding:7px;border-bottom:1px solid #e5e7eb;text-align:center">' + schedule + '</td>' +
-        '<td style="padding:7px;border-bottom:1px solid #e5e7eb;text-align:center">' + completed + '</td>' +
-      '</tr>';
-    }).join('');
-
-    $('itemsBox').innerHTML =
-      '<strong>metric_items 조회 성공 · P-01-1</strong><br>' +
-      '<div style="overflow-x:auto;margin-top:8px">' +
-      '<table style="width:100%;border-collapse:collapse;font-size:13px;min-width:620px">' +
-      '<thead><tr>' +
-      '<th style="padding:7px;border-bottom:1px solid #cfd5dd">순서</th>' +
-      '<th style="padding:7px;border-bottom:1px solid #cfd5dd">추진내용</th>' +
-      '<th style="padding:7px;border-bottom:1px solid #cfd5dd">상태</th>' +
-      '<th style="padding:7px;border-bottom:1px solid #cfd5dd">계획</th>' +
-      '<th style="padding:7px;border-bottom:1px solid #cfd5dd">완료일</th>' +
-      '</tr></thead><tbody>' + (rows || '<tr><td colspan="5">조회된 단계 없음</td></tr>') + '</tbody></table></div>';
-  }
-
-  async function runAal1BlockTest(nextAction){
-    show('aal1TestScreen');
-    $('aal1Result').innerHTML = 'AAL1 상태와 DB 접근 여부를 확인하는 중입니다...';
-    $('continueMfaBtn').style.display = 'none';
-
-    try{
-      const { data: aal, error: aalError } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (aalError) throw aalError;
-
-      if (aal.currentLevel !== 'aal1') {
-        $('aal1Result').innerHTML =
-          '<span style="color:#9f1239"><strong>테스트 조건 불충족:</strong> 현재 세션이 ' +
-          aal.currentLevel + ' 상태입니다. 새 InPrivate 창에서 다시 로그인해 주세요.</span>';
-        return;
-      }
-
-      const { data, error } = await sb
-        .from('metrics')
-        .select('indicator_id')
-        .limit(1);
-
-      const blockedByError = !!error;
-      const blockedByNoRows = !error && Array.isArray(data) && data.length === 0;
-
-      if (blockedByError || blockedByNoRows) {
-        $('aal1Result').innerHTML =
-          '<span style="color:#166534"><strong>차단 성공</strong></span><br>' +
-          '현재 인증수준: <strong>AAL1</strong><br>' +
-          'MFA 완료 전 metrics 업무 데이터가 조회되지 않았습니다.' +
-          (error ? '<br><span style="color:#6b7280">DB 응답: ' + String(error.message || error) + '</span>' : '');
-        window._afterAal1Test = nextAction;
-        $('continueMfaBtn').style.display = 'block';
-      } else {
-        $('aal1Result').innerHTML =
-          '<span style="color:#9f1239"><strong>보안 테스트 실패</strong></span><br>' +
-          'AAL1 상태에서 metrics 데이터가 조회되었습니다. MFA/RLS 정책을 재점검해야 합니다.';
-      }
-    }catch(e){
-      $('aal1Result').innerHTML =
-        '<span style="color:#9f1239"><strong>테스트 오류:</strong> ' +
-        String(e.message || e) + '</span>';
-    }
-  }
-
-  async function routeAfterFirstFactor(){
-    const { data: factorsData, error: factorsError } = await sb.auth.mfa.listFactors();
-    if (factorsError) throw factorsError;
-
-    const verified = (factorsData?.totp || []).filter(f => f.status === 'verified');
-    if (verified.length === 0) {
-      const { data, error } = await sb.auth.mfa.enroll({
-        factorType: 'totp',
-        friendlyName: 'monitoring-hug'
-      });
-      if (error) throw error;
-      enrollFactorId = data.id;
-      const qr = data?.totp?.qr_code || '';
-      $('qrImg').src = qr.startsWith('data:image') ? qr : 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(qr);
-      if (data?.totp?.secret) {
-        $('manualSecret').textContent = data.totp.secret;
-        $('manualSecretWrap').style.display = 'block';
-      }
-      show('enrollScreen');
-      return;
-    }
-
-    const { data: aal, error: aalError } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (aalError) throw aalError;
-    if (aal.currentLevel === 'aal2') {
-      await showReady();
-    } else {
-      window._verifiedFactorId = verified[0].id;
-      await runAal1BlockTest('verified');
-    }
-  }
-
-  async function boot(){
-    const key = sessionStorage.getItem(KEY_STORAGE);
-    if (!key) { show('configScreen'); return; }
-    initClient(key);
-
-    const invite = isInviteReturn();
-    const { data: { session }, error } = await sb.auth.getSession();
-
-    if (error) {
-      show('loginScreen');
-      message('loginMsg', '인증 세션을 확인하지 못했습니다: ' + error.message);
-      cleanAuthHash();
-      return;
-    }
-
-    if (session) {
-      cleanAuthHash();
-      if (invite) {
-        show('passwordScreen');
-      } else {
-        try { await routeAfterFirstFactor(); }
-        catch(e){ show('loginScreen'); message('loginMsg', e.message || String(e)); }
-      }
-    } else {
-      cleanAuthHash();
-      show('loginScreen');
-    }
-  }
-
-  $('saveConfigBtn').addEventListener('click', async () => {
-    clearMessage('configMsg');
-    const key = $('pubKey').value.trim();
-    if (!key.startsWith('sb_publishable_')) {
-      return message('configMsg','Publishable key 형식을 확인하세요. Secret key는 입력하지 마세요.');
-    }
-    sessionStorage.setItem(KEY_STORAGE, key);
-    location.reload();
-  });
-
-  $('loginBtn').addEventListener('click', async () => {
-    clearMessage('loginMsg');
-    const email=$('email').value.trim();
-    const password=$('password').value;
-    if (!email || !password) return message('loginMsg','이메일과 비밀번호를 입력하세요.');
-    $('loginBtn').disabled=true;
-    try{
-      const { error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      await routeAfterFirstFactor();
-    }catch(e){ message('loginMsg', e.message || String(e)); }
-    finally{ $('loginBtn').disabled=false; }
-  });
-
-  $('setPasswordBtn').addEventListener('click', async () => {
-    clearMessage('passwordMsg');
-    const p1=$('newPassword').value, p2=$('newPassword2').value;
-    if (p1.length < 12) return message('passwordMsg','비밀번호는 12자 이상으로 입력하세요.');
-    if (p1 !== p2) return message('passwordMsg','비밀번호 확인이 일치하지 않습니다.');
-    $('setPasswordBtn').disabled=true;
-    try{
-      const { error } = await sb.auth.updateUser({ password:p1 });
-      if (error) throw error;
-      await routeAfterFirstFactor();
-    }catch(e){ message('passwordMsg', e.message || String(e)); }
-    finally{ $('setPasswordBtn').disabled=false; }
-  });
-
-  $('enrollVerifyBtn').addEventListener('click', async () => {
-    clearMessage('enrollMsg');
-    const code=$('enrollCode').value.trim();
-    if (!/^\d{6}$/.test(code)) return message('enrollMsg','6자리 숫자를 입력하세요.');
-    $('enrollVerifyBtn').disabled=true;
-    try{
-      const { error } = await sb.auth.mfa.challengeAndVerify({ factorId:enrollFactorId, code });
-      if (error) throw error;
-      const { data: aal, error: aalError } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (aalError) throw aalError;
-      if (aal.currentLevel !== 'aal2') throw new Error('MFA 인증 수준이 AAL2로 올라가지 않았습니다.');
-      await showReady();
-    }catch(e){ message('enrollMsg', e.message || String(e)); }
-    finally{ $('enrollVerifyBtn').disabled=false; }
-  });
-
-
-  $('continueMfaBtn').addEventListener('click', () => {
-    show('mfaScreen');
-  });
-
-  $('mfaVerifyBtn').addEventListener('click', async () => {
-    clearMessage('mfaMsg');
-    const code=$('mfaCode').value.trim();
-    if (!/^\d{6}$/.test(code)) return message('mfaMsg','6자리 숫자를 입력하세요.');
-    $('mfaVerifyBtn').disabled=true;
-    try{
-      const { error } = await sb.auth.mfa.challengeAndVerify({ factorId:window._verifiedFactorId, code });
-      if (error) throw error;
-      const { data: aal, error: aalError } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (aalError) throw aalError;
-      if (aal.currentLevel !== 'aal2') throw new Error('MFA 인증 수준이 AAL2로 올라가지 않았습니다.');
-      await showReady();
-    }catch(e){ message('mfaMsg', e.message || String(e)); }
-    finally{ $('mfaVerifyBtn').disabled=false; }
-  });
-
-  $('logoutBtn').addEventListener('click', async () => {
-    await sb.auth.signOut();
-    show('loginScreen');
-  });
-
-  boot();
-})();
+async function boot(){
+  if(SUPABASE_PUBLISHABLE_KEY.startsWith('PASTE_')){authMsg('loginMsg','운영용 Publishable key가 아직 설정되지 않았습니다. GitHub index.html의 SUPABASE_PUBLISHABLE_KEY 값을 먼저 입력하세요.');return;}
+  const invite=isInviteReturn(); const {data:{session},error}=await sb.auth.getSession();
+  if(error){authMsg('loginMsg',error.message);cleanAuthHash();return;}
+  if(session){cleanAuthHash();if(invite)authShow('passwordScreen');else{try{await routeAfterFirstFactor();}catch(e){authShow('loginScreen');authMsg('loginMsg',e.message||String(e));}}}
+  else{cleanAuthHash();authShow('loginScreen');}
+}
+boot();
 </script>
 </body>
 </html>
