@@ -100,7 +100,10 @@
     <section id="readyScreen" class="screen">
       <h2 style="font-size:18px">인증 완료</h2>
       <div class="msg ok show">이메일 + MFA(AAL2) 인증까지 정상적으로 완료되었습니다.</div>
-      <div class="sub" style="margin-top:16px">현재는 보안 연결 테스트 단계라 DB 테이블을 아직 Data API에 공개하지 않았습니다. 다음 단계에서 최소 권한으로 순차 연결합니다.</div>
+      <div id="profileBox" style="margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#f9fafb;line-height:1.7;font-size:14px;">
+        사용자 권한을 확인하는 중입니다...
+      </div>
+      <div class="sub" style="margin-top:16px">현재는 profiles 테이블만 Data API에 공개한 상태입니다. 다른 업무 데이터는 아직 공개하지 않았습니다.</div>
       <button id="logoutBtn" class="secondary">로그아웃</button>
     </section>
   </main>
@@ -141,6 +144,49 @@
     });
   }
 
+
+  async function loadCurrentProfile(){
+    const { data: { user }, error: userError } = await sb.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error('로그인 사용자를 확인할 수 없습니다.');
+
+    const { data, error } = await sb
+      .from('profiles')
+      .select('display_name, role, is_active')
+      .eq('id', user.id)
+      .single();
+
+    if (error) throw error;
+    if (!data) throw new Error('사용자 프로필을 찾을 수 없습니다.');
+
+    const roleLabel = {
+      viewer: '조회자',
+      editor: '부서 담당자',
+      admin: '기획조정실'
+    }[data.role] || data.role;
+
+    $('profileBox').innerHTML =
+      '<strong>사용자:</strong> ' + (data.display_name || user.email || '-') + '<br>' +
+      '<strong>권한:</strong> ' + roleLabel + ' (' + data.role + ')<br>' +
+      '<strong>계정 상태:</strong> ' + (data.is_active ? '사용 가능' : '비활성');
+
+    if (!data.is_active) {
+      throw new Error('비활성화된 사용자입니다.');
+    }
+  }
+
+  async function showReady(){
+    show('readyScreen');
+    $('profileBox').textContent = '사용자 권한을 확인하는 중입니다...';
+    try{
+      await loadCurrentProfile();
+    }catch(e){
+      $('profileBox').innerHTML =
+        '<span style="color:#9f1239"><strong>프로필 조회 실패:</strong> ' +
+        String(e.message || e) + '</span>';
+    }
+  }
+
   async function routeAfterFirstFactor(){
     const { data: factorsData, error: factorsError } = await sb.auth.mfa.listFactors();
     if (factorsError) throw factorsError;
@@ -166,7 +212,7 @@
     const { data: aal, error: aalError } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
     if (aalError) throw aalError;
     if (aal.currentLevel === 'aal2') {
-      show('readyScreen');
+      await showReady();
     } else {
       window._verifiedFactorId = verified[0].id;
       show('mfaScreen');
@@ -251,7 +297,7 @@
       const { data: aal, error: aalError } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
       if (aalError) throw aalError;
       if (aal.currentLevel !== 'aal2') throw new Error('MFA 인증 수준이 AAL2로 올라가지 않았습니다.');
-      show('readyScreen');
+      await showReady();
     }catch(e){ message('enrollMsg', e.message || String(e)); }
     finally{ $('enrollVerifyBtn').disabled=false; }
   });
@@ -267,7 +313,7 @@
       const { data: aal, error: aalError } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
       if (aalError) throw aalError;
       if (aal.currentLevel !== 'aal2') throw new Error('MFA 인증 수준이 AAL2로 올라가지 않았습니다.');
-      show('readyScreen');
+      await showReady();
     }catch(e){ message('mfaMsg', e.message || String(e)); }
     finally{ $('mfaVerifyBtn').disabled=false; }
   });
