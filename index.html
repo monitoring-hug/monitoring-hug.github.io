@@ -115,7 +115,10 @@
       <div id="metricsBox" style="margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#f9fafb;line-height:1.7;font-size:14px;">
         지표 조회를 확인하는 중입니다...
       </div>
-      <div class="sub" style="margin-top:16px">현재는 profiles와 metrics 테이블만 Data API에 공개한 상태입니다. metric_items 등 다른 업무 데이터는 아직 공개하지 않았습니다.</div>
+      <div id="itemsBox" style="margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#f9fafb;line-height:1.7;font-size:14px;">
+        P-01-1 단계 데이터를 확인하는 중입니다...
+      </div>
+      <div class="sub" style="margin-top:16px">현재는 profiles, metrics, metric_items 세 테이블만 Data API에 공개한 상태입니다. audit_logs와 app_settings는 아직 공개하지 않았습니다.</div>
       <button id="logoutBtn" class="secondary">로그아웃</button>
     </section>
   </main>
@@ -230,8 +233,61 @@
         '<span style="color:#9f1239"><strong>metrics 조회 실패:</strong> ' +
         String(e.message || e) + '</span>';
     }
+
+    $('itemsBox').textContent = 'P-01-1 단계 데이터를 확인하는 중입니다...';
+    try{
+      await loadP011Items();
+    }catch(e){
+      $('itemsBox').innerHTML =
+        '<span style="color:#9f1239"><strong>metric_items 조회 실패:</strong> ' +
+        String(e.message || e) + '</span>';
+    }
   }
 
+
+
+  async function loadP011Items(){
+    const { data: metric, error: metricError } = await sb
+      .from('metrics')
+      .select('id, indicator_id')
+      .eq('indicator_id', 'P-01-1')
+      .single();
+
+    if (metricError) throw metricError;
+    if (!metric) throw new Error('P-01-1 지표를 찾을 수 없습니다.');
+
+    const { data, error } = await sb
+      .from('metric_items')
+      .select('item_order, content, status, planned_schedule, completion_date')
+      .eq('metric_id', metric.id)
+      .order('item_order', { ascending: true });
+
+    if (error) throw error;
+
+    const rows = (data || []).map(item => {
+      const completed = item.completion_date || '-';
+      const schedule = item.planned_schedule || '-';
+      return '<tr>' +
+        '<td style="padding:7px;border-bottom:1px solid #e5e7eb;text-align:center">' + item.item_order + '</td>' +
+        '<td style="padding:7px;border-bottom:1px solid #e5e7eb">' + item.content + '</td>' +
+        '<td style="padding:7px;border-bottom:1px solid #e5e7eb;text-align:center">' + item.status + '</td>' +
+        '<td style="padding:7px;border-bottom:1px solid #e5e7eb;text-align:center">' + schedule + '</td>' +
+        '<td style="padding:7px;border-bottom:1px solid #e5e7eb;text-align:center">' + completed + '</td>' +
+      '</tr>';
+    }).join('');
+
+    $('itemsBox').innerHTML =
+      '<strong>metric_items 조회 성공 · P-01-1</strong><br>' +
+      '<div style="overflow-x:auto;margin-top:8px">' +
+      '<table style="width:100%;border-collapse:collapse;font-size:13px;min-width:620px">' +
+      '<thead><tr>' +
+      '<th style="padding:7px;border-bottom:1px solid #cfd5dd">순서</th>' +
+      '<th style="padding:7px;border-bottom:1px solid #cfd5dd">추진내용</th>' +
+      '<th style="padding:7px;border-bottom:1px solid #cfd5dd">상태</th>' +
+      '<th style="padding:7px;border-bottom:1px solid #cfd5dd">계획</th>' +
+      '<th style="padding:7px;border-bottom:1px solid #cfd5dd">완료일</th>' +
+      '</tr></thead><tbody>' + (rows || '<tr><td colspan="5">조회된 단계 없음</td></tr>') + '</tbody></table></div>';
+  }
 
   async function runAal1BlockTest(nextAction){
     show('aal1TestScreen');
