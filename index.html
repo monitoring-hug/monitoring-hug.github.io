@@ -458,10 +458,10 @@ button,select{font:inherit}
       <div class="invite-box">
         <div class="invite-title">대량 초대용 개별 초대링크 생성</div>
         <div class="admin-note" style="margin-bottom:10px">
-          Supabase 기본 초대메일 대신 이메일별 초대링크를 생성합니다. 생성된 링크는 회사메일 또는 메신저로 해당 사용자에게 개별 전달하세요.
+          Supabase 기본 초대메일 대신 이메일별 초대링크를 생성합니다. @khug.or.kr 회사 이메일만 초대할 수 있으며, 생성된 링크는 해당 사용자에게 개별 전달하세요.
         </div>
         <div class="invite-row">
-          <input id="inviteLinkEmail" type="email" placeholder="초대할 이메일 주소">
+          <input id="inviteLinkEmail" type="email" placeholder="예: user@khug.or.kr">
           <button id="generateInviteLinkBtn" class="admin-btn">초대링크 생성</button>
         </div>
         <div id="inviteLinkMsg" class="note"></div>
@@ -1128,6 +1128,9 @@ async function generateInviteLink(){
   msg.textContent=''; result.classList.remove('show'); out.value='';
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
     msg.textContent='올바른 이메일 주소를 입력하세요.'; return;
+  }
+  if(!email.toLowerCase().endsWith('@khug.or.kr')){
+    msg.textContent='@khug.or.kr 회사 이메일만 초대할 수 있습니다.'; return;
   }
 
   btn.disabled=true; btn.textContent='생성 중...';
