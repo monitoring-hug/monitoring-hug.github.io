@@ -130,6 +130,16 @@ button,select{font:inherit}
 .info-line span+span:before{content:"";width:1px;height:13px;background:#D9E1E8;margin:0 13px}
 .modal-body{padding:24px 28px 30px;overflow:auto}
 .block-title{font-size:16px;font-weight:850;margin:0 0 14px;color:#243544}
+
+.process-title-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 14px;flex-wrap:wrap}
+.process-title-row .block-title{margin:0}
+.process-legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:#667585;font-size:12px;font-weight:750}
+.legend-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.legend-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.legend-dot.complete{background:var(--hug-green)}
+.legend-dot.ongoing{background:var(--hug-sky)}
+.legend-dot.waiting{background:var(--waiting)}
+
 .process-matrix{display:grid;grid-template-columns:124px minmax(0,1fr);align-items:start;border:1px solid #E2E9EF;border-radius:13px;background:#fff;overflow:hidden}
 .process-labels{padding-top:58px;background:#F7F9FB;border-right:1px solid #E2E9EF}
 .process-label{display:flex;align-items:center;padding:0 12px;color:#788593;font-size:11px;font-weight:850;white-space:nowrap;border-top:1px solid #E7EDF2}
@@ -186,6 +196,56 @@ button,select{font:inherit}
   .modal-title{font-size:21px}.info-line{display:grid;gap:6px}.info-line span+span:before{display:none}
   .process-matrix{grid-template-columns:110px minmax(0,1fr)}.process-label{padding:0 8px;font-size:10px}.step{width:290px;flex-basis:290px}
 }
+
+/* Admin screens */
+.admin-page{max-width:1520px;margin:0 auto;padding:28px 34px 70px}
+.admin-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:18px}
+.admin-title{margin:0;font-size:26px;color:#153B59}
+.admin-sub{margin-top:6px;color:var(--muted);font-size:13px}
+.admin-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.admin-tab{border:1px solid #d8e1ea;background:#fff;border-radius:10px;padding:9px 13px;font-weight:800;color:#536476;cursor:pointer}
+.admin-tab.active{background:#eaf4fb;border-color:#a9cde7;color:#125f97}
+.admin-panel{display:none}
+.admin-panel.active{display:block}
+.admin-grid{display:grid;grid-template-columns:minmax(300px,.8fr) minmax(560px,1.7fr);gap:16px}
+.admin-card{background:#fff;border:1px solid #dce5ed;border-radius:14px;padding:16px;box-shadow:0 6px 20px rgba(35,61,87,.05)}
+.admin-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.admin-toolbar input,.admin-toolbar select,.admin-form input,.admin-form select,.admin-form textarea{
+  border:1px solid #cfd9e3;border-radius:9px;padding:9px 10px;font:inherit;background:#fff;color:#243544
+}
+.admin-toolbar input{min-width:220px;flex:1}
+.admin-btn{border:0;border-radius:9px;background:var(--hug-blue);color:#fff;padding:9px 12px;font-weight:800;cursor:pointer}
+.admin-btn.secondary{background:#eef3f7;color:#33475a}
+.admin-btn.danger{background:#b42318}
+.admin-btn.small{padding:6px 9px;font-size:12px}
+.admin-list{max-height:650px;overflow:auto;border:1px solid #e2e8ef;border-radius:10px}
+.admin-list-row{padding:11px 12px;border-bottom:1px solid #edf1f5;cursor:pointer}
+.admin-list-row:last-child{border-bottom:0}
+.admin-list-row.active{background:#edf7fd}
+.admin-list-id{font-weight:900;color:#176aa7;font-size:13px}
+.admin-list-name{font-weight:800;margin-top:3px}
+.admin-list-meta{font-size:12px;color:#7a8794;margin-top:3px}
+.admin-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.admin-field{display:flex;flex-direction:column;gap:6px}
+.admin-field.full{grid-column:1/-1}
+.admin-field label{font-size:12px;font-weight:850;color:#536476}
+.admin-form textarea{min-height:74px;resize:vertical}
+.admin-section-title{font-size:15px;font-weight:900;color:#2e4152;margin:20px 0 10px}
+.item-edit{display:grid;grid-template-columns:54px minmax(220px,1fr) 120px 130px 130px auto;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #edf1f5}
+.item-edit input,.item-edit select{width:100%;border:1px solid #cfd9e3;border-radius:8px;padding:8px;font:inherit}
+.user-table,.audit-table{width:100%;border-collapse:collapse;font-size:13px}
+.user-table th,.user-table td,.audit-table th,.audit-table td{padding:9px;border-bottom:1px solid #e8edf2;text-align:left;vertical-align:top}
+.user-table th,.audit-table th{background:#f7f9fb;color:#526272;font-size:12px}
+.audit-wrap{overflow:auto;max-height:700px;border:1px solid #e2e8ef;border-radius:10px}
+.audit-change{white-space:pre-wrap;word-break:break-word;max-width:420px;color:#4a5c6d}
+.admin-note{padding:10px 12px;border-radius:9px;background:#fff8e6;color:#735c16;font-size:12px;line-height:1.55;margin-bottom:12px}
+@media(max-width:900px){
+  .admin-grid{grid-template-columns:1fr}
+  .admin-form{grid-template-columns:1fr}
+  .admin-field.full{grid-column:auto}
+  .item-edit{grid-template-columns:46px 1fr;align-items:start}
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -205,7 +265,7 @@ button,select{font:inherit}
 .auth-qr{text-align:center;margin:18px 0}.auth-qr img{max-width:220px;width:100%;border:1px solid #E5EAF0;padding:10px;background:#fff;border-radius:12px}
 .auth-secret{word-break:break-all;background:#F3F4F6;padding:10px;border-radius:8px;font-family:monospace;font-size:12px}
 .app-hidden{display:none!important}
-.user-strip{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:-14px 0 20px;color:#6D7885;font-size:13px}
+.user-strip{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:0 0 20px;padding-top:4px;color:#6D7885;font-size:13px}
 .user-role{font-weight:800;color:#1C75BC}.mini-btn{height:34px;padding:0 12px;border:1px solid #DCE4EC;border-radius:9px;background:#fff;color:#334152;cursor:pointer}
 .loading-overlay{position:fixed;inset:0;background:rgba(243,247,251,.88);display:none;place-items:center;z-index:3000;font-weight:800;color:#153B59}.loading-overlay.show{display:grid}
 
@@ -311,6 +371,58 @@ button,select{font:inherit}
   </div>
 </div>
 
+
+<div id="adminRoot" class="admin-page app-hidden">
+  <div id="adminUserStrip" class="user-strip"></div>
+  <div class="admin-head">
+    <div>
+      <h2 class="admin-title">기획조정실 관리</h2>
+      <div class="admin-sub">지표·단계 구조, 사용자 권한, 변경이력을 관리합니다.</div>
+    </div>
+  </div>
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-admin-tab="master">지표·단계 관리</button>
+    <button class="admin-tab" data-admin-tab="users">사용자·권한관리</button>
+    <button class="admin-tab" data-admin-tab="audit">변경이력</button>
+  </div>
+
+  <section id="adminPanelMaster" class="admin-panel active">
+    <div class="admin-grid">
+      <div class="admin-card">
+        <div class="admin-toolbar">
+          <input id="adminMetricSearch" type="search" placeholder="지표ID 또는 과제명 검색">
+          <button id="adminNewMetric" class="admin-btn">+ 신규 지표</button>
+        </div>
+        <div id="adminMetricList" class="admin-list"></div>
+      </div>
+      <div id="adminMetricDetail" class="admin-card">
+        <div class="detail-empty">왼쪽에서 지표를 선택하거나 신규 지표를 추가하세요.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="adminPanelUsers" class="admin-panel">
+    <div class="admin-card">
+      <div class="admin-note">
+        새 사용자의 <strong>초대/삭제</strong>는 Auth 관리자 권한이 필요한 작업이라 공개용 브라우저 키로 처리하지 않습니다.
+        현재 운영 방식대로 Supabase Dashboard의 Authentication → Users에서 초대하고,
+        여기서는 초대된 사용자의 <strong>표시명·역할·활성상태</strong>만 관리합니다.
+      </div>
+      <div id="adminUsers"></div>
+    </div>
+  </section>
+
+  <section id="adminPanelAudit" class="admin-panel">
+    <div class="admin-card">
+      <div class="admin-toolbar">
+        <input id="auditSearch" type="search" placeholder="사용자, 지표ID, 변경내용 검색">
+        <button id="auditReload" class="admin-btn secondary">새로고침</button>
+      </div>
+      <div id="adminAudit"></div>
+    </div>
+  </section>
+</div>
+
 <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal">
     <div class="modal-topline"></div>
@@ -327,6 +439,7 @@ button,select{font:inherit}
 
 </div>
 <script>
+// v5 operational: v3.2 + editor + admin management
 let RAW_DATA = [];
 let DATA_REFERENCE_DATE = "-";
 
@@ -379,7 +492,7 @@ function measureSummary(card){
     }
     return {
       target:(targetItem && targetItem.content) ? targetItem.content : '-',
-      actual:(actualItem && actualItem.content) ? actualItem.content : '완료 단계 없음'
+      actual:(actualItem && actualItem.content) ? `${actualItem.content} 완료` : '-'
     };
   }
 
@@ -538,7 +651,14 @@ function stepBody(card,p){
       <div class="step-value completed">${safe(x.completedDate||'-')}</div>
     </div>
   </div>`).join('');
-  return `<h3 class="block-title">프로세스 진행 현황</h3>
+  return `<div class="process-title-row">
+    <h3 class="block-title">프로세스 진행 현황</h3>
+    <div class="process-legend" aria-label="상태 범례">
+      <span class="legend-item"><span class="legend-dot complete"></span>완료</span>
+      <span class="legend-item"><span class="legend-dot ongoing"></span>진행중</span>
+      <span class="legend-item"><span class="legend-dot waiting"></span>대기</span>
+    </div>
+  </div>
   <div class="process-matrix">
     <div class="process-labels" aria-hidden="true">
       <div class="process-label content">추진내용</div>
@@ -579,7 +699,6 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
 });
 let currentProfile=null;
-let refreshTimer=null;
 let DB_METRICS=[];
 let DB_ITEMS=[];
 let selectedMetricUuid=null;
@@ -643,32 +762,312 @@ async function enterApp(){
   const strip=document.createElement('div');strip.className='user-strip';
   const roleLabel={viewer:'조회자',editor:'부서 담당자',admin:'기획조정실'}[p.role]||p.role;
   const canEdit=['editor','admin'].includes(p.role);
-  strip.innerHTML=`${canEdit?'<div class="app-nav"><button id="navDashboard" class="nav-btn active">현황판</button><button id="navUpdate" class="nav-btn">실적 업데이트</button></div>':''}<span>${safe(p.display_name||p.email||'')}</span><span class="user-role">${safe(roleLabel)}</span><button id="appLogoutBtn" class="mini-btn">로그아웃</button>`;
+  strip.innerHTML=`${canEdit?`<div class="app-nav"><button id="navDashboard" class="nav-btn active">현황판</button><button id="navUpdate" class="nav-btn">실적 업데이트</button>${p.role==='admin'?'<button id="navAdmin" class="nav-btn">기획조정실 관리</button>':''}</div>`:''}<span>${safe(p.display_name||p.email||'')}</span><span class="user-role">${safe(roleLabel)}</span><button id="appLogoutBtn" class="mini-btn">로그아웃</button>`;
   document.querySelector('.page').insertBefore(strip,document.querySelector('.page').firstChild);
   document.getElementById('appLogoutBtn').addEventListener('click',async()=>{await sb.auth.signOut();location.reload();});
   if(canEdit){
-    document.getElementById('navDashboard').addEventListener('click',()=>switchAppView('dashboard'));
+    document.getElementById('navDashboard').addEventListener('click',async()=>{await loadDashboardData();switchAppView('dashboard');});
     document.getElementById('navUpdate').addEventListener('click',()=>switchAppView('update'));
+    if(p.role==='admin')document.getElementById('navAdmin').addEventListener('click',()=>switchAppView('admin'));
   }
   await loadDashboardData();
-  clearInterval(refreshTimer);refreshTimer=setInterval(()=>loadDashboardData().catch(console.error),60000);
+  if(p.role==='admin'){
+    document.getElementById('adminMetricSearch').addEventListener('input',renderAdminMetricList);
+    document.getElementById('adminNewMetric').addEventListener('click',()=>{adminSelectedMetricId=null;renderAdminMetricList();renderAdminMetricDetail(null,true);});
+    document.querySelectorAll('.admin-tab').forEach(b=>b.addEventListener('click',()=>switchAdminTab(b.dataset.adminTab)));
+    document.getElementById('auditSearch').addEventListener('input',renderAuditTable);
+    document.getElementById('auditReload').addEventListener('click',loadAuditLogs);
+  }
 }
 
+
+
+let adminSelectedMetricId=null;
+let adminAuditRows=[];
+let adminProfiles=[];
+
+function roleLabel(role){
+  return {viewer:'조회자',editor:'부서 담당자',admin:'기획조정실'}[role]||role||'-';
+}
+function adminNavHtml(active='admin'){
+  return `<div class="app-nav">
+    <button class="nav-btn ${active==='dashboard'?'active':''}" data-admin-nav="dashboard">현황판</button>
+    <button class="nav-btn ${active==='update'?'active':''}" data-admin-nav="update">실적 업데이트</button>
+    <button class="nav-btn ${active==='admin'?'active':''}" data-admin-nav="admin">기획조정실 관리</button>
+  </div>
+  <span>${safe(currentProfile?.display_name||currentProfile?.email||'')}</span>
+  <span class="user-role">${safe(roleLabel(currentProfile?.role))}</span>
+  <button class="mini-btn" data-admin-nav="logout">로그아웃</button>`;
+}
+function bindAdminStrip(root,active='admin'){
+  root.innerHTML=adminNavHtml(active);
+  root.querySelector('[data-admin-nav="dashboard"]').onclick=async()=>{await loadDashboardData();switchAppView('dashboard');};
+  root.querySelector('[data-admin-nav="update"]').onclick=()=>switchAppView('update');
+  root.querySelector('[data-admin-nav="admin"]').onclick=()=>switchAppView('admin');
+  root.querySelector('[data-admin-nav="logout"]').onclick=async()=>{await sb.auth.signOut();location.reload();};
+}
+function switchAdminTab(tab){
+  document.querySelectorAll('.admin-tab').forEach(b=>b.classList.toggle('active',b.dataset.adminTab===tab));
+  document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));
+  const id={master:'adminPanelMaster',users:'adminPanelUsers',audit:'adminPanelAudit'}[tab];
+  if(id)document.getElementById(id).classList.add('active');
+  if(tab==='users')loadAdminUsers();
+  if(tab==='audit')loadAuditLogs();
+}
+function renderAdminMetricList(){
+  const root=document.getElementById('adminMetricList'); if(!root)return;
+  const q=(document.getElementById('adminMetricSearch')?.value||'').trim().toLowerCase();
+  const rows=DB_METRICS.filter(m=>!q||`${m.indicator_id} ${m.metric_name} ${m.detail_name}`.toLowerCase().includes(q));
+  root.innerHTML=rows.map(m=>`<div class="admin-list-row ${adminSelectedMetricId===m.id?'active':''}" data-amid="${m.id}">
+    <div class="admin-list-id">${safe(m.indicator_id)}</div>
+    <div class="admin-list-name">${safe(m.detail_name)}</div>
+    <div class="admin-list-meta">${safe(m.category)} · ${safe(m.measurement_type)} · ${safe((m.responsible_departments||[]).join(' / '))}</div>
+  </div>`).join('')||'<div class="detail-empty">검색 결과가 없습니다.</div>';
+  root.querySelectorAll('[data-amid]').forEach(el=>el.onclick=()=>{adminSelectedMetricId=el.dataset.amid;renderAdminMetricList();renderAdminMetricDetail(adminSelectedMetricId);});
+}
+function measurementOptions(value){
+  return ['계량','비계량-단계','비계량-체크'].map(x=>`<option ${x===value?'selected':''}>${x}</option>`).join('');
+}
+function statusOptions(value){
+  return ['완료','진행중','대기'].map(x=>`<option ${x===value?'selected':''}>${x}</option>`).join('');
+}
+function renderAdminMetricDetail(id, isNew=false){
+  const root=document.getElementById('adminMetricDetail'); if(!root)return;
+  const m=isNew?{
+    id:null,indicator_id:'',category:'',metric_name:'',detail_name:'',responsible_departments:[],
+    measurement_type:'비계량-단계',metric_schedule:'',quant_target:null,quant_current:null,quant_unit:'',
+    sort_order:(Math.max(0,...DB_METRICS.map(x=>Number(x.sort_order)||0))+1),is_active:true
+  }:DB_METRICS.find(x=>x.id===id);
+  if(!m){root.innerHTML='<div class="detail-empty">지표를 찾을 수 없습니다.</div>';return;}
+  const items=isNew?[]:DB_ITEMS.filter(x=>x.metric_id===m.id).sort((a,b)=>a.item_order-b.item_order);
+  root.innerHTML=`
+    <div class="admin-form">
+      <div class="admin-field"><label>지표ID</label><input id="am_indicator" value="${safe(m.indicator_id)}"></div>
+      <div class="admin-field"><label>대분류</label><input id="am_category" value="${safe(m.category)}"></div>
+      <div class="admin-field"><label>중분류(관리과제)</label><input id="am_metric_name" value="${safe(m.metric_name)}"></div>
+      <div class="admin-field"><label>소분류</label><input id="am_detail_name" value="${safe(m.detail_name)}"></div>
+      <div class="admin-field full"><label>담당부서 (복수는 쉼표로 구분)</label><input id="am_depts" value="${safe((m.responsible_departments||[]).join(', '))}"></div>
+      <div class="admin-field"><label>측정방식</label><select id="am_measurement">${measurementOptions(m.measurement_type)}</select></div>
+      <div class="admin-field"><label>정렬순서</label><input id="am_sort" type="number" value="${safe(m.sort_order)}"></div>
+      <div class="admin-field"><label>지표 추진일정(계량 등)</label><input id="am_schedule" value="${safe(m.metric_schedule||'')}"></div>
+      <div class="admin-field"><label>활성상태</label><select id="am_active"><option value="true" ${m.is_active?'selected':''}>사용</option><option value="false" ${!m.is_active?'selected':''}>숨김</option></select></div>
+      <div class="admin-field"><label>계량 목표</label><input id="am_target" type="number" step="any" value="${m.quant_target??''}"></div>
+      <div class="admin-field"><label>계량 실적</label><input id="am_current" type="number" step="any" value="${m.quant_current??''}"></div>
+      <div class="admin-field"><label>계량 단위</label><input id="am_unit" value="${safe(m.quant_unit||'')}"></div>
+    </div>
+    <div class="admin-toolbar" style="margin-top:14px">
+      <button id="amSaveBase" class="admin-btn">${isNew?'신규 지표 저장':'기본정보 저장'}</button>
+      ${!isNew?'<button id="amDeleteMetric" class="admin-btn danger">지표 삭제</button>':''}
+    </div>
+    <div id="amBaseMsg" class="note"></div>
+    <div id="amItemsArea"></div>`;
+  const meas=document.getElementById('am_measurement');
+  const paintItems=()=>renderAdminItems(m,items,isNew);
+  meas.onchange=paintItems; paintItems();
+
+  document.getElementById('amSaveBase').onclick=async()=>{
+    const payload={
+      indicator_id:document.getElementById('am_indicator').value.trim(),
+      category:document.getElementById('am_category').value.trim(),
+      metric_name:document.getElementById('am_metric_name').value.trim(),
+      detail_name:document.getElementById('am_detail_name').value.trim(),
+      responsible_departments:document.getElementById('am_depts').value.split(',').map(x=>x.trim()).filter(Boolean),
+      measurement_type:document.getElementById('am_measurement').value,
+      metric_schedule:document.getElementById('am_schedule').value.trim()||null,
+      sort_order:Number(document.getElementById('am_sort').value)||0,
+      is_active:document.getElementById('am_active').value==='true',
+      quant_target:document.getElementById('am_target').value===''?null:Number(document.getElementById('am_target').value),
+      quant_current:document.getElementById('am_current').value===''?null:Number(document.getElementById('am_current').value),
+      quant_unit:document.getElementById('am_unit').value.trim()||null
+    };
+    if(!payload.indicator_id||!payload.category||!payload.metric_name||!payload.detail_name){
+      document.getElementById('amBaseMsg').textContent='지표ID, 대분류, 중분류, 소분류는 필수입니다.';return;
+    }
+    if(payload.measurement_type!=='계량'){payload.quant_target=null;payload.quant_current=null;payload.quant_unit=null;}
+    const res=isNew?await sb.from('metrics').insert(payload).select('id').single():await sb.from('metrics').update(payload).eq('id',m.id).select('id').single();
+    if(res.error){document.getElementById('amBaseMsg').textContent='저장 실패: '+res.error.message;return;}
+    document.getElementById('amBaseMsg').textContent='저장 완료';
+    adminSelectedMetricId=res.data.id;
+    await loadDashboardData();
+    renderAdminMetricList();
+    renderAdminMetricDetail(adminSelectedMetricId);
+  };
+  if(!isNew){
+    document.getElementById('amDeleteMetric').onclick=async()=>{
+      if(!confirm(`${m.indicator_id} 지표와 연결된 단계/체크 항목을 삭제할까요?`))return;
+      const {error}=await sb.from('metrics').delete().eq('id',m.id);
+      if(error){alert('삭제 실패: '+error.message);return;}
+      adminSelectedMetricId=null; await loadDashboardData(); renderAdminMetricList();
+      root.innerHTML='<div class="detail-empty">지표가 삭제되었습니다.</div>';
+    };
+  }
+}
+function renderAdminItems(metric,items,isNew){
+  const area=document.getElementById('amItemsArea'); if(!area)return;
+  const meas=document.getElementById('am_measurement')?.value||metric.measurement_type;
+  if(meas==='계량'){
+    area.innerHTML='<div class="admin-note" style="margin-top:16px">계량 지표는 단계/체크 항목을 사용하지 않습니다. 목표·실적·단위는 위 기본정보에서 관리합니다.</div>';
+    return;
+  }
+  if(isNew){
+    area.innerHTML='<div class="admin-note" style="margin-top:16px">신규 지표의 기본정보를 먼저 저장한 후 단계/체크 항목을 추가할 수 있습니다.</div>';
+    return;
+  }
+  const rows=items.map(it=>`<div class="item-edit" data-item-id="${it.id}">
+    <input class="ai_order" type="number" min="1" value="${it.item_order}" title="순서">
+    <input class="ai_content" value="${safe(it.content)}" title="추진내용">
+    <select class="ai_status" title="상태">${statusOptions(it.status)}</select>
+    <input class="ai_schedule" value="${safe(it.planned_schedule||'')}" placeholder="26.8월" title="추진일정">
+    <input class="ai_date" value="${it.completion_date?fmtDbDate(it.completion_date):''}" placeholder="26.08.23" title="완료일">
+    <button class="admin-btn danger small ai_delete">삭제</button>
+  </div>`).join('');
+  area.innerHTML=`<div class="admin-section-title">${meas==='비계량-단계'?'단계 관리':'체크 항목 관리'}</div>
+    <div class="admin-note">완료 상태이면 완료일자를 YY.MM.DD 형식으로 입력하고, 진행중/대기이면 완료일자를 비워주세요.</div>
+    <div id="adminItemsList">${rows||'<div class="detail-empty">등록된 항목이 없습니다.</div>'}</div>
+    <div class="admin-toolbar" style="margin-top:12px">
+      <button id="adminAddItem" class="admin-btn secondary">+ 항목 추가</button>
+      <button id="adminSaveItems" class="admin-btn">단계/항목 저장</button>
+    </div>
+    <div id="adminItemsMsg" class="note"></div>`;
+  area.querySelectorAll('.ai_delete').forEach(btn=>btn.onclick=()=>btn.closest('.item-edit').remove());
+  document.getElementById('adminAddItem').onclick=()=>{
+    const list=document.getElementById('adminItemsList');
+    if(list.querySelector('.detail-empty'))list.innerHTML='';
+    const n=list.querySelectorAll('.item-edit').length+1;
+    const div=document.createElement('div');div.className='item-edit';div.dataset.itemId='';
+    div.innerHTML=`<input class="ai_order" type="number" min="1" value="${n}">
+      <input class="ai_content" placeholder="추진내용">
+      <select class="ai_status">${statusOptions('대기')}</select>
+      <input class="ai_schedule" placeholder="26.8월">
+      <input class="ai_date" placeholder="26.08.23">
+      <button class="admin-btn danger small ai_delete">삭제</button>`;
+    div.querySelector('.ai_delete').onclick=()=>div.remove(); list.appendChild(div);
+  };
+  document.getElementById('adminSaveItems').onclick=async()=>{
+    const msg=document.getElementById('adminItemsMsg');
+    const rows=[...document.querySelectorAll('#adminItemsList .item-edit')];
+    const parsed=[];
+    for(const row of rows){
+      const status=row.querySelector('.ai_status').value;
+      const txt=row.querySelector('.ai_date').value.trim();
+      if(status==='완료'&&!/^\d{2}\.\d{2}\.\d{2}$/.test(txt)){msg.textContent='완료 항목은 완료일자를 YY.MM.DD 형식으로 입력하세요.';return;}
+      if(status!=='완료'&&txt){msg.textContent='진행중/대기 항목은 완료일자를 비워주세요.';return;}
+      parsed.push({
+        id:row.dataset.itemId||null,
+        item_order:Number(row.querySelector('.ai_order').value)||0,
+        content:row.querySelector('.ai_content').value.trim(),
+        status,
+        planned_schedule:row.querySelector('.ai_schedule').value.trim()||null,
+        completion_date:status==='완료'?('20'+txt.replaceAll('.','-')):null
+      });
+    }
+    if(parsed.some(x=>x.item_order<1||!x.content)){msg.textContent='순서는 1 이상, 추진내용은 필수입니다.';return;}
+    const orders=parsed.map(x=>x.item_order); if(new Set(orders).size!==orders.length){msg.textContent='같은 지표 안에서 순서는 중복될 수 없습니다.';return;}
+    const existingIds=new Set(items.map(x=>x.id));
+    const keptIds=new Set(parsed.filter(x=>x.id).map(x=>x.id));
+    const toDelete=[...existingIds].filter(id=>!keptIds.has(id));
+    if(toDelete.length){
+      const d=await sb.from('metric_items').delete().in('id',toDelete); if(d.error){msg.textContent='삭제 실패: '+d.error.message;return;}
+    }
+    // Avoid unique-order collisions during reordering: move existing rows to temporary high orders first.
+    const existingParsed=parsed.filter(x=>x.id);
+    for(let idx=0;idx<existingParsed.length;idx++){
+      const tmp=await sb.from('metric_items').update({item_order:10000+idx}).eq('id',existingParsed[idx].id);
+      if(tmp.error){msg.textContent='순서 변경 준비 실패: '+tmp.error.message;return;}
+    }
+    for(const x of parsed){
+      const payload={metric_id:metric.id,item_order:x.item_order,content:x.content,status:x.status,planned_schedule:x.planned_schedule,completion_date:x.completion_date};
+      const r=x.id?await sb.from('metric_items').update(payload).eq('id',x.id):await sb.from('metric_items').insert(payload);
+      if(r.error){msg.textContent='저장 실패: '+r.error.message;return;}
+    }
+    msg.textContent='단계/항목 저장 완료';
+    await loadDashboardData(); renderAdminMetricList(); renderAdminMetricDetail(metric.id);
+  };
+}
+async function loadAdminUsers(){
+  const root=document.getElementById('adminUsers'); if(!root)return;
+  root.innerHTML='사용자 정보를 불러오는 중입니다...';
+  const {data,error}=await sb.from('profiles').select('id,display_name,role,is_active,updated_at').order('display_name',{ascending:true});
+  if(error){root.textContent='조회 실패: '+error.message;return;}
+  adminProfiles=data||[];
+  root.innerHTML=`<div style="overflow:auto"><table class="user-table"><thead><tr><th>사용자</th><th>역할</th><th>상태</th><th>저장</th></tr></thead><tbody>
+    ${adminProfiles.map(p=>`<tr data-user-id="${p.id}">
+      <td><input class="au_name" value="${safe(p.display_name||'')}" style="width:100%;min-width:220px"></td>
+      <td><select class="au_role"><option value="viewer" ${p.role==='viewer'?'selected':''}>조회자</option><option value="editor" ${p.role==='editor'?'selected':''}>부서 담당자</option><option value="admin" ${p.role==='admin'?'selected':''}>기획조정실</option></select></td>
+      <td><select class="au_active"><option value="true" ${p.is_active?'selected':''}>사용</option><option value="false" ${!p.is_active?'selected':''}>비활성</option></select></td>
+      <td><button class="admin-btn small au_save">저장</button></td>
+    </tr>`).join('')}
+  </tbody></table></div>`;
+  root.querySelectorAll('.au_save').forEach(btn=>btn.onclick=async()=>{
+    const tr=btn.closest('tr'),id=tr.dataset.userId;
+    const payload={display_name:tr.querySelector('.au_name').value.trim(),role:tr.querySelector('.au_role').value,is_active:tr.querySelector('.au_active').value==='true'};
+    if(id===currentProfile.id && (!payload.is_active || payload.role!=='admin')){
+      if(!confirm('현재 로그인 중인 본인의 기획조정실 권한을 낮추거나 비활성화하면 관리화면 접근을 잃을 수 있습니다. 계속할까요?'))return;
+    }
+    const {error}=await sb.from('profiles').update(payload).eq('id',id);
+    if(error){alert('저장 실패: '+error.message);return;}
+    alert('사용자 권한이 저장되었습니다.');
+    if(id===currentProfile.id){currentProfile={...currentProfile,...payload};}
+  });
+}
+function compactAuditDiff(oldData,newData){
+  const o=oldData||{}, n=newData||{}; const keys=[...new Set([...Object.keys(o),...Object.keys(n)])];
+  const ignore=new Set(['updated_at']);
+  const changes=keys.filter(k=>!ignore.has(k)&&JSON.stringify(o[k])!==JSON.stringify(n[k]));
+  if(!changes.length)return '-';
+  return changes.map(k=>`${k}: ${JSON.stringify(o[k]??null)} → ${JSON.stringify(n[k]??null)}`).join('\n');
+}
+async function loadAuditLogs(){
+  const root=document.getElementById('adminAudit'); if(!root)return;
+  root.innerHTML='변경이력을 불러오는 중입니다...';
+  const [aRes,pRes]=await Promise.all([
+    sb.from('audit_logs').select('id,actor_user_id,table_name,operation,metric_id,item_id,old_data,new_data,changed_at').order('changed_at',{ascending:false}).limit(300),
+    sb.from('profiles').select('id,display_name')
+  ]);
+  if(aRes.error){root.textContent='조회 실패: '+aRes.error.message;return;}
+  const pmap=new Map((pRes.data||[]).map(x=>[x.id,x.display_name||x.id]));
+  const mmap=new Map(DB_METRICS.map(x=>[x.id,x.indicator_id]));
+  adminAuditRows=(aRes.data||[]).map(r=>({...r,actor_name:pmap.get(r.actor_user_id)||r.actor_user_id||'시스템',indicator:mmap.get(r.metric_id)||r.metric_id||'-'}));
+  renderAuditTable();
+}
+function renderAuditTable(){
+  const root=document.getElementById('adminAudit'); if(!root)return;
+  const q=(document.getElementById('auditSearch')?.value||'').trim().toLowerCase();
+  const rows=adminAuditRows.filter(r=>!q||`${r.actor_name} ${r.indicator} ${r.table_name} ${r.operation} ${compactAuditDiff(r.old_data,r.new_data)}`.toLowerCase().includes(q));
+  root.innerHTML=`<div class="audit-wrap"><table class="audit-table"><thead><tr><th>일시</th><th>사용자</th><th>지표</th><th>작업</th><th>변경내용</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td>${safe(new Date(r.changed_at).toLocaleString('ko-KR'))}</td><td>${safe(r.actor_name)}</td><td>${safe(r.indicator)}</td><td>${safe(r.table_name)} / ${safe(r.operation)}</td><td class="audit-change">${safe(compactAuditDiff(r.old_data,r.new_data))}</td></tr>`).join('')||'<tr><td colspan="5">변경이력이 없습니다.</td></tr>'}
+  </tbody></table></div>`;
+}
 
 function switchAppView(view){
   const page=document.querySelector('#appRoot > .page');
   const upd=document.getElementById('updateRoot');
-  const dashBtn=document.getElementById('navDashboard'), updBtn=document.getElementById('navUpdate');
+  const adm=document.getElementById('adminRoot');
+  const dashBtn=document.getElementById('navDashboard'), updBtn=document.getElementById('navUpdate'), adminBtn=document.getElementById('navAdmin');
+
+  page.classList.add('app-hidden'); upd.classList.add('app-hidden'); adm.classList.add('app-hidden');
+  if(dashBtn)dashBtn.classList.remove('active'); if(updBtn)updBtn.classList.remove('active'); if(adminBtn)adminBtn.classList.remove('active');
+
   if(view==='update'){
-    page.classList.add('app-hidden'); upd.classList.remove('app-hidden');
-    if(dashBtn)dashBtn.classList.remove('active'); if(updBtn)updBtn.classList.add('active');
-    // keep user strip visible by moving a compact navigation copy into update page when needed
+    upd.classList.remove('app-hidden');
+    if(updBtn)updBtn.classList.add('active');
     let top=document.getElementById('updateUserStrip');
-    if(!top){top=document.createElement('div');top.id='updateUserStrip';top.className='user-strip';top.innerHTML=`<div class="app-nav"><button id="updNavDashboard" class="nav-btn">현황판</button><button class="nav-btn active">실적 업데이트</button></div><span>${safe(currentProfile.display_name||currentProfile.email||'')}</span><span class="user-role">${safe({viewer:'조회자',editor:'부서 담당자',admin:'기획조정실'}[currentProfile.role]||currentProfile.role)}</span><button id="updLogoutBtn" class="mini-btn">로그아웃</button>`;upd.insertBefore(top,upd.firstChild);document.getElementById('updNavDashboard').onclick=()=>switchAppView('dashboard');document.getElementById('updLogoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload();};}
+    if(!top){top=document.createElement('div');top.id='updateUserStrip';top.className='user-strip';upd.insertBefore(top,upd.firstChild);}
+    top.innerHTML=currentProfile.role==='admin'?adminNavHtml('update'):`<div class="app-nav"><button id="updNavDashboard" class="nav-btn">현황판</button><button class="nav-btn active">실적 업데이트</button></div><span>${safe(currentProfile.display_name||currentProfile.email||'')}</span><span class="user-role">${safe(roleLabel(currentProfile.role))}</span><button id="updLogoutBtn" class="mini-btn">로그아웃</button>`;
+    if(currentProfile.role==='admin')bindAdminStrip(top,'update');
+    else{
+      document.getElementById('updNavDashboard').onclick=async()=>{await loadDashboardData();switchAppView('dashboard');};
+      document.getElementById('updLogoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload();};
+    }
     buildUpdateFilters();renderMetricList();
+  }else if(view==='admin'){
+    if(currentProfile.role!=='admin'){switchAppView('dashboard');return;}
+    adm.classList.remove('app-hidden'); if(adminBtn)adminBtn.classList.add('active');
+    bindAdminStrip(document.getElementById('adminUserStrip'),'admin');
+    renderAdminMetricList();
+    if(adminSelectedMetricId)renderAdminMetricDetail(adminSelectedMetricId);
   }else{
-    upd.classList.add('app-hidden'); page.classList.remove('app-hidden');
-    if(dashBtn)dashBtn.classList.add('active'); if(updBtn)updBtn.classList.remove('active');
+    page.classList.remove('app-hidden'); if(dashBtn)dashBtn.classList.add('active');
   }
 }
 function buildUpdateFilters(){
