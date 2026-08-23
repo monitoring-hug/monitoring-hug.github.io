@@ -88,6 +88,15 @@
       <div id="enrollMsg" class="msg"></div>
     </section>
 
+    <section id="aal1TestScreen" class="screen">
+      <h2 style="font-size:18px">MFA 전 DB 접근 차단 테스트</h2>
+      <div class="sub">비밀번호 로그인만 완료된 AAL1 상태에서 metrics 조회를 시도합니다. 정상이라면 업무 데이터가 조회되지 않아야 합니다.</div>
+      <div id="aal1Result" style="margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#f9fafb;line-height:1.7;font-size:14px;">
+        테스트 중입니다...
+      </div>
+      <button id="continueMfaBtn" style="display:none">MFA 인증 계속</button>
+    </section>
+
     <section id="mfaScreen" class="screen">
       <h2 style="font-size:18px">MFA 인증</h2>
       <div class="sub">Google Authenticator에 표시되는 6자리 코드를 입력하세요.</div>
@@ -120,7 +129,7 @@
   let enrollFactorId = null;
 
   const $ = id => document.getElementById(id);
-  const screens = ['configScreen','loginScreen','passwordScreen','enrollScreen','mfaScreen','readyScreen'];
+  const screens = ['configScreen','loginScreen','passwordScreen','enrollScreen','aal1TestScreen','mfaScreen','readyScreen'];
 
   function show(id){
     screens.forEach(x => $(x).classList.toggle('active', x === id));
@@ -223,6 +232,51 @@
     }
   }
 
+
+  async function runAal1BlockTest(nextAction){
+    show('aal1TestScreen');
+    $('aal1Result').innerHTML = 'AAL1 상태와 DB 접근 여부를 확인하는 중입니다...';
+    $('continueMfaBtn').style.display = 'none';
+
+    try{
+      const { data: aal, error: aalError } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aalError) throw aalError;
+
+      if (aal.currentLevel !== 'aal1') {
+        $('aal1Result').innerHTML =
+          '<span style="color:#9f1239"><strong>테스트 조건 불충족:</strong> 현재 세션이 ' +
+          aal.currentLevel + ' 상태입니다. 새 InPrivate 창에서 다시 로그인해 주세요.</span>';
+        return;
+      }
+
+      const { data, error } = await sb
+        .from('metrics')
+        .select('indicator_id')
+        .limit(1);
+
+      const blockedByError = !!error;
+      const blockedByNoRows = !error && Array.isArray(data) && data.length === 0;
+
+      if (blockedByError || blockedByNoRows) {
+        $('aal1Result').innerHTML =
+          '<span style="color:#166534"><strong>차단 성공</strong></span><br>' +
+          '현재 인증수준: <strong>AAL1</strong><br>' +
+          'MFA 완료 전 metrics 업무 데이터가 조회되지 않았습니다.' +
+          (error ? '<br><span style="color:#6b7280">DB 응답: ' + String(error.message || error) + '</span>' : '');
+        window._afterAal1Test = nextAction;
+        $('continueMfaBtn').style.display = 'block';
+      } else {
+        $('aal1Result').innerHTML =
+          '<span style="color:#9f1239"><strong>보안 테스트 실패</strong></span><br>' +
+          'AAL1 상태에서 metrics 데이터가 조회되었습니다. MFA/RLS 정책을 재점검해야 합니다.';
+      }
+    }catch(e){
+      $('aal1Result').innerHTML =
+        '<span style="color:#9f1239"><strong>테스트 오류:</strong> ' +
+        String(e.message || e) + '</span>';
+    }
+  }
+
   async function routeAfterFirstFactor(){
     const { data: factorsData, error: factorsError } = await sb.auth.mfa.listFactors();
     if (factorsError) throw factorsError;
@@ -251,7 +305,7 @@
       await showReady();
     } else {
       window._verifiedFactorId = verified[0].id;
-      show('mfaScreen');
+      await runAal1BlockTest('verified');
     }
   }
 
@@ -336,6 +390,11 @@
       await showReady();
     }catch(e){ message('enrollMsg', e.message || String(e)); }
     finally{ $('enrollVerifyBtn').disabled=false; }
+  });
+
+
+  $('continueMfaBtn').addEventListener('click', () => {
+    show('mfaScreen');
   });
 
   $('mfaVerifyBtn').addEventListener('click', async () => {
