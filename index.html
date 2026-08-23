@@ -1126,7 +1126,7 @@ async function generateInviteLink(){
 
   const email=emailEl.value.trim();
   msg.textContent=''; result.classList.remove('show'); out.value='';
-  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
     msg.textContent='올바른 이메일 주소를 입력하세요.'; return;
   }
 
