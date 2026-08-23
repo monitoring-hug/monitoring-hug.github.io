@@ -246,6 +246,35 @@ button,select{font:inherit}
   .item-edit{grid-template-columns:46px 1fr;align-items:start}
 }
 
+
+/* Responsive process popup: keep up to 4 stages visible without horizontal scroll */
+@media (min-width: 760px){
+  .process-matrix{overflow:hidden}
+  .timeline-scroll{overflow-x:hidden}
+  .timeline{min-width:0 !important;width:100%;display:grid !important;grid-template-columns:repeat(var(--stage-count,4),minmax(0,1fr));gap:0}
+  .step{min-width:0 !important;width:auto !important;flex:none !important;padding:0 8px}
+  .step-values{min-width:0}
+  .step-value.content{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-size:clamp(11px,1.05vw,14px);
+  }
+  .process-labels{width:112px;min-width:112px}
+}
+@media (min-width: 760px) and (max-width: 1180px){
+  .modal{width:min(98vw,1740px)}
+  .modal-body{padding-left:18px;padding-right:18px}
+  .process-labels{width:96px;min-width:96px}
+  .step{padding:0 5px}
+  .step-value{font-size:12px}
+}
+
+
+.auth-link-btn{display:block;width:100%;margin-top:9px;border:0;background:transparent;color:#176aa7;font-weight:800;cursor:pointer;padding:7px}
+.auth-link-btn:hover{text-decoration:underline}
+.password-rule{margin:12px 0;padding:10px 12px;border-radius:9px;background:#f5f8fb;border:1px solid #dce5ed;color:#4d6072;font-size:12px;line-height:1.55}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -296,15 +325,27 @@ button,select{font:inherit}
       <h2 style="font-size:18px">로그인</h2>
       <label for="email">이메일</label><input id="email" type="email" autocomplete="username">
       <label for="password">비밀번호</label><input id="password" type="password" autocomplete="current-password">
-      <button id="loginBtn" class="auth-btn">로그인</button><div id="loginMsg" class="auth-msg"></div>
+      <button id="loginBtn" class="auth-btn">로그인</button>
+      <button id="forgotPasswordBtn" type="button" class="auth-link-btn">비밀번호를 잊으셨나요?</button>
+      <div id="loginMsg" class="auth-msg"></div>
     </section>
 
     <section id="passwordScreen" class="auth-screen">
-      <h2 style="font-size:18px">최초 비밀번호 설정</h2>
-      <div class="auth-sub">초대받은 계정의 현황판 로그인 비밀번호를 설정합니다.</div>
-      <label for="newPassword">새 비밀번호</label><input id="newPassword" type="password" autocomplete="new-password" minlength="12">
-      <label for="newPassword2">새 비밀번호 확인</label><input id="newPassword2" type="password" autocomplete="new-password" minlength="12">
+      <h2 id="passwordScreenTitle" style="font-size:18px">최초 비밀번호 설정</h2>
+      <div id="passwordScreenSub" class="auth-sub">초대받은 계정의 현황판 로그인 비밀번호를 설정합니다.</div>
+      <div class="password-rule">비밀번호는 <strong>10자 이상</strong>이며, <strong>영문 소문자 + 숫자 + 특수문자</strong>를 각각 1개 이상 포함해야 합니다.</div>
+      <label for="newPassword">새 비밀번호</label><input id="newPassword" type="password" autocomplete="new-password" minlength="10">
+      <label for="newPassword2">새 비밀번호 확인</label><input id="newPassword2" type="password" autocomplete="new-password" minlength="10">
       <button id="setPasswordBtn" class="auth-btn">비밀번호 설정</button><div id="passwordMsg" class="auth-msg"></div>
+    </section>
+
+    <section id="resetRequestScreen" class="auth-screen">
+      <h2 style="font-size:18px">비밀번호 재설정</h2>
+      <div class="auth-sub">가입된 이메일 주소로 비밀번호 재설정 링크를 보내드립니다.</div>
+      <label for="resetEmail">이메일</label><input id="resetEmail" type="email" autocomplete="username">
+      <button id="sendResetBtn" class="auth-btn">재설정 메일 보내기</button>
+      <button id="backToLoginBtn" type="button" class="auth-link-btn">로그인으로 돌아가기</button>
+      <div id="resetMsg" class="auth-msg"></div>
     </section>
 
     <section id="enrollScreen" class="auth-screen">
@@ -415,7 +456,8 @@ button,select{font:inherit}
   <section id="adminPanelAudit" class="admin-panel">
     <div class="admin-card">
       <div class="admin-toolbar">
-        <input id="auditSearch" type="search" placeholder="사용자, 지표ID, 변경내용 검색">
+        <input id="auditSearch" type="search" placeholder="사용자, 지표ID, 단계·항목, 변경내용 검색">
+        <select id="auditDepartment"><option value="">담당부서 전체</option></select>
         <button id="auditReload" class="admin-btn secondary">새로고침</button>
       </div>
       <div id="adminAudit"></div>
@@ -659,7 +701,7 @@ function stepBody(card,p){
       <span class="legend-item"><span class="legend-dot waiting"></span>대기</span>
     </div>
   </div>
-  <div class="process-matrix">
+  <div class="process-matrix" style="--stage-count:${Math.min(Math.max(card.items.length,1),4)}">
     <div class="process-labels" aria-hidden="true">
       <div class="process-label content">추진내용</div>
       <div class="process-label schedule">추진일정(계획)</div>
@@ -696,7 +738,12 @@ function checkBody(card,p){
 const SUPABASE_URL = 'https://vhrytlptivwyukgefywd.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_zXLV4ps7jJ51h5K-fSM1Fg_jwv-VxPb';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+  auth:{
+    persistSession:true,
+    autoRefreshToken:true,
+    detectSessionInUrl:true,
+    storage:window.sessionStorage
+  }
 });
 let currentProfile=null;
 let DB_METRICS=[];
@@ -705,12 +752,54 @@ let selectedMetricUuid=null;
 let enrollFactorId=null;
 
 function authShow(id){
-  ['loginScreen','passwordScreen','enrollScreen','mfaScreen'].forEach(x=>document.getElementById(x).classList.toggle('active',x===id));
+  ['loginScreen','passwordScreen','resetRequestScreen','enrollScreen','mfaScreen'].forEach(x=>document.getElementById(x).classList.toggle('active',x===id));
 }
 function authMsg(id,text,ok=false){const el=document.getElementById(id);el.textContent=text;el.className='auth-msg show '+(ok?'ok':'error');}
 function authMsgClear(id){const el=document.getElementById(id);el.textContent='';el.className='auth-msg';}
-function isInviteReturn(){return location.hash.includes('type=invite')||location.search.includes('type=invite')||location.hash.includes('access_token=');}
-function cleanAuthHash(){if(location.hash&&(location.hash.includes('access_token=')||location.hash.includes('error=')))history.replaceState(null,'',location.pathname+location.search);}
+function authUrlType(){
+  const qs=new URLSearchParams(location.search);
+  const hs=new URLSearchParams((location.hash||'').replace(/^#/,''));
+  return qs.get('type')||hs.get('type')||'';
+}
+function isInviteReturn(){return authUrlType()==='invite';}
+function isRecoveryReturn(){return authUrlType()==='recovery';}
+function cleanAuthHash(){
+  if(location.hash&&(location.hash.includes('access_token=')||location.hash.includes('refresh_token=')||location.hash.includes('error='))){
+    history.replaceState(null,'',location.pathname+location.search);
+  }
+}
+function validatePassword(p){
+  if(String(p).length<10)return '비밀번호는 10자 이상으로 입력하세요.';
+  if(!/[a-z]/.test(p))return '영문 소문자를 1개 이상 포함하세요.';
+  if(!/[0-9]/.test(p))return '숫자를 1개 이상 포함하세요.';
+  if(!/[^A-Za-z0-9]/.test(p))return '특수문자를 1개 이상 포함하세요.';
+  return '';
+}
+function koreaWeekKey(){
+  const now=new Date();
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
+  const y=Number(parts.find(x=>x.type==='year').value),m=Number(parts.find(x=>x.type==='month').value),d=Number(parts.find(x=>x.type==='day').value);
+  const local=new Date(Date.UTC(y,m-1,d));
+  const day=(local.getUTCDay()+6)%7; // Monday=0
+  local.setUTCDate(local.getUTCDate()-day);
+  return local.toISOString().slice(0,10);
+}
+const WEEK_KEY='monitoring_hug_login_week';
+function markLoginWeek(){sessionStorage.setItem(WEEK_KEY,koreaWeekKey());}
+async function enforceWeeklySession(){
+  const saved=sessionStorage.getItem(WEEK_KEY);
+  if(saved && saved!==koreaWeekKey()){
+    sessionStorage.removeItem(WEEK_KEY);
+    await sb.auth.signOut();
+    return false;
+  }
+  return true;
+}
+async function fullSignOut(){
+  sessionStorage.removeItem(WEEK_KEY);
+  await sb.auth.signOut();
+  location.reload();
+}
 function fmtDate(v){if(!v)return ''; const d=new Date(v); if(Number.isNaN(d.getTime()))return String(v); return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(d).replace(/\. /g,'.').replace(/\.$/,'');}
 function fmtDbDate(v){if(!v)return ''; const [y,m,d]=String(v).split('-'); return y&&m&&d?`${y.slice(2)}.${m}.${d}`:String(v);}
 function numText(v,unit){if(v===null||v===undefined||v==='')return '-'; const n=Number(v); const t=Number.isFinite(n)?n.toLocaleString('ko-KR'):String(v); return `${t}${unit||''}`;}
@@ -727,6 +816,7 @@ async function loadProfile(){
 }
 
 async function loadDashboardData(){
+  if(!(await enforceWeeklySession())) throw new Error('새 주가 시작되어 다시 로그인이 필요합니다.');
   if(!(await requireAal2())) throw new Error('MFA 인증이 필요합니다.');
   document.getElementById('loadingOverlay').classList.add('show');
   try{
@@ -755,6 +845,7 @@ async function loadDashboardData(){
 }
 
 async function enterApp(){
+  if(!(await enforceWeeklySession())){authShow('loginScreen');authMsg('loginMsg','새 주가 시작되어 다시 로그인해 주세요.');return;}
   if(!(await requireAal2())){await routeAfterFirstFactor();return;}
   const p=await loadProfile();
   document.getElementById('authRoot').classList.add('app-hidden');
@@ -764,7 +855,7 @@ async function enterApp(){
   const canEdit=['editor','admin'].includes(p.role);
   strip.innerHTML=`${canEdit?`<div class="app-nav"><button id="navDashboard" class="nav-btn active">현황판</button><button id="navUpdate" class="nav-btn">실적 업데이트</button>${p.role==='admin'?'<button id="navAdmin" class="nav-btn">기획조정실 관리</button>':''}</div>`:''}<span>${safe(p.display_name||p.email||'')}</span><span class="user-role">${safe(roleLabel)}</span><button id="appLogoutBtn" class="mini-btn">로그아웃</button>`;
   document.querySelector('.page').insertBefore(strip,document.querySelector('.page').firstChild);
-  document.getElementById('appLogoutBtn').addEventListener('click',async()=>{await sb.auth.signOut();location.reload();});
+  document.getElementById('appLogoutBtn').addEventListener('click',async()=>{await fullSignOut();});
   if(canEdit){
     document.getElementById('navDashboard').addEventListener('click',async()=>{await loadDashboardData();switchAppView('dashboard');});
     document.getElementById('navUpdate').addEventListener('click',()=>switchAppView('update'));
@@ -776,6 +867,7 @@ async function enterApp(){
     document.getElementById('adminNewMetric').addEventListener('click',()=>{adminSelectedMetricId=null;renderAdminMetricList();renderAdminMetricDetail(null,true);});
     document.querySelectorAll('.admin-tab').forEach(b=>b.addEventListener('click',()=>switchAdminTab(b.dataset.adminTab)));
     document.getElementById('auditSearch').addEventListener('input',renderAuditTable);
+    document.getElementById('auditDepartment').addEventListener('change',renderAuditTable);
     document.getElementById('auditReload').addEventListener('click',loadAuditLogs);
   }
 }
@@ -804,7 +896,7 @@ function bindAdminStrip(root,active='admin'){
   root.querySelector('[data-admin-nav="dashboard"]').onclick=async()=>{await loadDashboardData();switchAppView('dashboard');};
   root.querySelector('[data-admin-nav="update"]').onclick=()=>switchAppView('update');
   root.querySelector('[data-admin-nav="admin"]').onclick=()=>switchAppView('admin');
-  root.querySelector('[data-admin-nav="logout"]').onclick=async()=>{await sb.auth.signOut();location.reload();};
+  root.querySelector('[data-admin-nav="logout"]').onclick=async()=>{await fullSignOut();};
 }
 function switchAdminTab(tab){
   document.querySelectorAll('.admin-tab').forEach(b=>b.classList.toggle('active',b.dataset.adminTab===tab));
@@ -828,6 +920,12 @@ function renderAdminMetricList(){
 function measurementOptions(value){
   return ['계량','비계량-단계','비계량-체크'].map(x=>`<option ${x===value?'selected':''}>${x}</option>`).join('');
 }
+
+function isValidPlanMonth(v){
+  const s=String(v||'').trim();
+  return !s || /^\d{2}\.(?:[1-9]|1[0-2])월$/.test(s);
+}
+
 function statusOptions(value){
   return ['완료','진행중','대기'].map(x=>`<option ${x===value?'selected':''}>${x}</option>`).join('');
 }
@@ -849,7 +947,7 @@ function renderAdminMetricDetail(id, isNew=false){
       <div class="admin-field full"><label>담당부서 (복수는 쉼표로 구분)</label><input id="am_depts" value="${safe((m.responsible_departments||[]).join(', '))}"></div>
       <div class="admin-field"><label>측정방식</label><select id="am_measurement">${measurementOptions(m.measurement_type)}</select></div>
       <div class="admin-field"><label>정렬순서</label><input id="am_sort" type="number" value="${safe(m.sort_order)}"></div>
-      <div class="admin-field"><label>지표 추진일정(계량 등)</label><input id="am_schedule" value="${safe(m.metric_schedule||'')}"></div>
+      <div class="admin-field"><label>지표 추진일정(계량 등)</label><input id="am_schedule" value="${safe(m.metric_schedule||'')}" placeholder="예: 26년"></div>
       <div class="admin-field"><label>활성상태</label><select id="am_active"><option value="true" ${m.is_active?'selected':''}>사용</option><option value="false" ${!m.is_active?'selected':''}>숨김</option></select></div>
       <div class="admin-field"><label>계량 목표</label><input id="am_target" type="number" step="any" value="${m.quant_target??''}"></div>
       <div class="admin-field"><label>계량 실적</label><input id="am_current" type="number" step="any" value="${m.quant_current??''}"></div>
@@ -866,6 +964,7 @@ function renderAdminMetricDetail(id, isNew=false){
   meas.onchange=paintItems; paintItems();
 
   document.getElementById('amSaveBase').onclick=async()=>{
+    const scheduleValue=document.getElementById('am_schedule').value.trim();
     const payload={
       indicator_id:document.getElementById('am_indicator').value.trim(),
       category:document.getElementById('am_category').value.trim(),
@@ -873,7 +972,7 @@ function renderAdminMetricDetail(id, isNew=false){
       detail_name:document.getElementById('am_detail_name').value.trim(),
       responsible_departments:document.getElementById('am_depts').value.split(',').map(x=>x.trim()).filter(Boolean),
       measurement_type:document.getElementById('am_measurement').value,
-      metric_schedule:document.getElementById('am_schedule').value.trim()||null,
+      metric_schedule:scheduleValue||null,
       sort_order:Number(document.getElementById('am_sort').value)||0,
       is_active:document.getElementById('am_active').value==='true',
       quant_target:document.getElementById('am_target').value===''?null:Number(document.getElementById('am_target').value),
@@ -917,12 +1016,12 @@ function renderAdminItems(metric,items,isNew){
     <input class="ai_order" type="number" min="1" value="${it.item_order}" title="순서">
     <input class="ai_content" value="${safe(it.content)}" title="추진내용">
     <select class="ai_status" title="상태">${statusOptions(it.status)}</select>
-    <input class="ai_schedule" value="${safe(it.planned_schedule||'')}" placeholder="26.8월" title="추진일정">
+    <input class="ai_schedule" value="${safe(it.planned_schedule||'')}" placeholder="예: 26.10월" title="추진일정">
     <input class="ai_date" value="${it.completion_date?fmtDbDate(it.completion_date):''}" placeholder="26.08.23" title="완료일">
     <button class="admin-btn danger small ai_delete">삭제</button>
   </div>`).join('');
   area.innerHTML=`<div class="admin-section-title">${meas==='비계량-단계'?'단계 관리':'체크 항목 관리'}</div>
-    <div class="admin-note">완료 상태이면 완료일자를 YY.MM.DD 형식으로 입력하고, 진행중/대기이면 완료일자를 비워주세요.</div>
+    <div class="admin-note">비계량 단계·체크의 추진일정(계획)은 YY.M월 형식(예: 26.1월, 26.10월)으로 입력하세요. 완료 상태이면 완료일자는 YY.MM.DD 형식으로 입력하고, 진행중/대기이면 완료일자를 비워주세요.</div>
     <div id="adminItemsList">${rows||'<div class="detail-empty">등록된 항목이 없습니다.</div>'}</div>
     <div class="admin-toolbar" style="margin-top:12px">
       <button id="adminAddItem" class="admin-btn secondary">+ 항목 추가</button>
@@ -938,7 +1037,7 @@ function renderAdminItems(metric,items,isNew){
     div.innerHTML=`<input class="ai_order" type="number" min="1" value="${n}">
       <input class="ai_content" placeholder="추진내용">
       <select class="ai_status">${statusOptions('대기')}</select>
-      <input class="ai_schedule" placeholder="26.8월">
+      <input class="ai_schedule" placeholder="예: 26.10월">
       <input class="ai_date" placeholder="26.08.23">
       <button class="admin-btn danger small ai_delete">삭제</button>`;
     div.querySelector('.ai_delete').onclick=()=>div.remove(); list.appendChild(div);
@@ -950,6 +1049,8 @@ function renderAdminItems(metric,items,isNew){
     for(const row of rows){
       const status=row.querySelector('.ai_status').value;
       const txt=row.querySelector('.ai_date').value.trim();
+      const schedule=row.querySelector('.ai_schedule').value.trim();
+      if(!isValidPlanMonth(schedule)){msg.textContent='추진일정(계획)은 YY.M월 형식으로 입력하세요. 예: 26.1월, 26.10월';return;}
       if(status==='완료'&&!/^\d{2}\.\d{2}\.\d{2}$/.test(txt)){msg.textContent='완료 항목은 완료일자를 YY.MM.DD 형식으로 입력하세요.';return;}
       if(status!=='완료'&&txt){msg.textContent='진행중/대기 항목은 완료일자를 비워주세요.';return;}
       parsed.push({
@@ -957,7 +1058,7 @@ function renderAdminItems(metric,items,isNew){
         item_order:Number(row.querySelector('.ai_order').value)||0,
         content:row.querySelector('.ai_content').value.trim(),
         status,
-        planned_schedule:row.querySelector('.ai_schedule').value.trim()||null,
+        planned_schedule:schedule||null,
         completion_date:status==='완료'?('20'+txt.replaceAll('.','-')):null
       });
     }
@@ -1026,19 +1127,96 @@ async function loadAuditLogs(){
   ]);
   if(aRes.error){root.textContent='조회 실패: '+aRes.error.message;return;}
   const pmap=new Map((pRes.data||[]).map(x=>[x.id,x.display_name||x.id]));
-  const mmap=new Map(DB_METRICS.map(x=>[x.id,x.indicator_id]));
-  adminAuditRows=(aRes.data||[]).map(r=>({...r,actor_name:pmap.get(r.actor_user_id)||r.actor_user_id||'시스템',indicator:mmap.get(r.metric_id)||r.metric_id||'-'}));
+  const mmap=new Map(DB_METRICS.map(x=>[x.id,x]));
+  const imap=new Map(DB_ITEMS.map(x=>[x.id,x]));
+
+  adminAuditRows=(aRes.data||[]).map(r=>{
+    const m=mmap.get(r.metric_id);
+    const liveItem=imap.get(r.item_id);
+    const oldItem=r.old_data||{}, newItem=r.new_data||{};
+    const itemOrder=(newItem.item_order??oldItem.item_order??liveItem?.item_order??null);
+    const itemContent=(newItem.content??oldItem.content??liveItem?.content??'');
+    const itemLabel=r.table_name==='metric_items'
+      ? `${itemOrder?itemOrder+'단계 · ':''}${itemContent||'단계/항목'}`
+      : '지표 기본정보';
+    return {
+      ...r,
+      actor_name:pmap.get(r.actor_user_id)||r.actor_user_id||'시스템',
+      indicator:m?.indicator_id||r.metric_id||'-',
+      departments:m?.responsible_departments||[],
+      item_label:itemLabel
+    };
+  });
+
+  const dep=document.getElementById('auditDepartment');
+  if(dep){
+    const current=dep.value;
+    const deps=[...new Set(DB_METRICS.flatMap(m=>m.responsible_departments||[]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
+    dep.innerHTML='<option value="">담당부서 전체</option>'+deps.map(d=>`<option value="${safe(d)}">${safe(d)}</option>`).join('');
+    dep.value=deps.includes(current)?current:'';
+  }
   renderAuditTable();
+}
+function isInternalTempOrderOnly(r){
+  if(r.table_name!=='metric_items' || r.operation!=='UPDATE')return false;
+  const o=r.old_data||{}, n=r.new_data||{};
+  const keys=[...new Set([...Object.keys(o),...Object.keys(n)])]
+    .filter(k=>k!=='updated_at' && JSON.stringify(o[k])!==JSON.stringify(n[k]));
+  if(keys.length!==1 || keys[0]!=='item_order')return false;
+  const a=Number(o.item_order), b=Number(n.item_order);
+  return a>=10000 || b>=10000;
+}
+function friendlyAuditDiff(r){
+  const o=r.old_data||{}, n=r.new_data||{};
+  if(r.operation==='INSERT'){
+    if(r.table_name==='metric_items') return `단계/항목 추가 · 상태 ${n.status||'-'}${n.planned_schedule?' · 계획 '+n.planned_schedule:''}`;
+    return '지표 추가';
+  }
+  if(r.operation==='DELETE'){
+    if(r.table_name==='metric_items') return `단계/항목 삭제 · ${o.content||''}`;
+    return '지표 삭제';
+  }
+  const labels={
+    status:'상태',completion_date:'완료일자',content:'추진내용',planned_schedule:'추진일정',
+    item_order:'순서',indicator_id:'지표ID',category:'대분류',metric_name:'중분류',
+    detail_name:'소분류',responsible_departments:'담당부서',measurement_type:'측정방식',
+    metric_schedule:'지표 추진일정',quant_target:'계량 목표',quant_current:'계량 실적',
+    quant_unit:'계량 단위',sort_order:'정렬순서',is_active:'활성상태'
+  };
+  const keys=[...new Set([...Object.keys(o),...Object.keys(n)])]
+    .filter(k=>k!=='updated_at' && JSON.stringify(o[k])!==JSON.stringify(n[k]));
+  if(!keys.length)return '-';
+  const fmt=v=>{
+    if(v===null||v===undefined||v==='')return '-';
+    if(Array.isArray(v))return v.join(' / ');
+    return String(v);
+  };
+  return keys.map(k=>`${labels[k]||k}: ${fmt(o[k])} → ${fmt(n[k])}`).join('\n');
 }
 function renderAuditTable(){
   const root=document.getElementById('adminAudit'); if(!root)return;
   const q=(document.getElementById('auditSearch')?.value||'').trim().toLowerCase();
-  const rows=adminAuditRows.filter(r=>!q||`${r.actor_name} ${r.indicator} ${r.table_name} ${r.operation} ${compactAuditDiff(r.old_data,r.new_data)}`.toLowerCase().includes(q));
-  root.innerHTML=`<div class="audit-wrap"><table class="audit-table"><thead><tr><th>일시</th><th>사용자</th><th>지표</th><th>작업</th><th>변경내용</th></tr></thead><tbody>
-    ${rows.map(r=>`<tr><td>${safe(new Date(r.changed_at).toLocaleString('ko-KR'))}</td><td>${safe(r.actor_name)}</td><td>${safe(r.indicator)}</td><td>${safe(r.table_name)} / ${safe(r.operation)}</td><td class="audit-change">${safe(compactAuditDiff(r.old_data,r.new_data))}</td></tr>`).join('')||'<tr><td colspan="5">변경이력이 없습니다.</td></tr>'}
+  const dep=document.getElementById('auditDepartment')?.value||'';
+
+  const rows=adminAuditRows
+    .filter(r=>!isInternalTempOrderOnly(r))
+    .filter(r=>!dep||(r.departments||[]).includes(dep))
+    .filter(r=>!q||`${r.actor_name} ${r.indicator} ${r.item_label} ${(r.departments||[]).join(' ')} ${r.table_name} ${r.operation} ${friendlyAuditDiff(r)}`.toLowerCase().includes(q));
+
+  root.innerHTML=`<div class="audit-wrap"><table class="audit-table"><thead><tr>
+    <th>일시</th><th>사용자</th><th>지표</th><th>단계·항목</th><th>담당부서</th><th>작업</th><th>변경내용</th>
+  </tr></thead><tbody>
+    ${rows.map(r=>`<tr>
+      <td>${safe(new Date(r.changed_at).toLocaleString('ko-KR'))}</td>
+      <td>${safe(r.actor_name)}</td>
+      <td>${safe(r.indicator)}</td>
+      <td>${safe(r.item_label)}</td>
+      <td>${safe((r.departments||[]).join(' / ')||'-')}</td>
+      <td>${safe(r.table_name)} / ${safe(r.operation)}</td>
+      <td class="audit-change">${safe(friendlyAuditDiff(r))}</td>
+    </tr>`).join('')||'<tr><td colspan="7">변경이력이 없습니다.</td></tr>'}
   </tbody></table></div>`;
 }
-
 function switchAppView(view){
   const page=document.querySelector('#appRoot > .page');
   const upd=document.getElementById('updateRoot');
@@ -1057,7 +1235,7 @@ function switchAppView(view){
     if(currentProfile.role==='admin')bindAdminStrip(top,'update');
     else{
       document.getElementById('updNavDashboard').onclick=async()=>{await loadDashboardData();switchAppView('dashboard');};
-      document.getElementById('updLogoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload();};
+      document.getElementById('updLogoutBtn').onclick=async()=>{await fullSignOut();};
     }
     buildUpdateFilters();renderMetricList();
   }else if(view==='admin'){
@@ -1132,12 +1310,37 @@ async function routeAfterFirstFactor(){
 document.getElementById('loginBtn').addEventListener('click',async()=>{
   authMsgClear('loginMsg');const email=document.getElementById('email').value.trim(),password=document.getElementById('password').value;
   if(!email||!password)return authMsg('loginMsg','이메일과 비밀번호를 입력하세요.');
-  try{const {error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;await routeAfterFirstFactor();}catch(e){authMsg('loginMsg',e.message||String(e));}
+  try{const {error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;markLoginWeek();await routeAfterFirstFactor();}catch(e){authMsg('loginMsg',e.message||String(e));}
+});
+document.getElementById('forgotPasswordBtn').addEventListener('click',()=>{
+  authMsgClear('resetMsg');
+  document.getElementById('resetEmail').value=document.getElementById('email').value.trim();
+  authShow('resetRequestScreen');
+});
+document.getElementById('backToLoginBtn').addEventListener('click',()=>authShow('loginScreen'));
+document.getElementById('sendResetBtn').addEventListener('click',async()=>{
+  authMsgClear('resetMsg');
+  const email=document.getElementById('resetEmail').value.trim();
+  if(!email)return authMsg('resetMsg','이메일을 입력하세요.');
+  try{
+    const redirectTo=location.origin+location.pathname;
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
+    if(error)throw error;
+    authMsg('resetMsg','재설정 메일을 보냈습니다. 이메일의 링크를 열어 새 비밀번호를 설정하세요.',true);
+  }catch(e){authMsg('resetMsg',e.message||String(e));}
 });
 document.getElementById('setPasswordBtn').addEventListener('click',async()=>{
-  authMsgClear('passwordMsg');const p1=document.getElementById('newPassword').value,p2=document.getElementById('newPassword2').value;
-  if(p1.length<12)return authMsg('passwordMsg','비밀번호는 12자 이상으로 입력하세요.'); if(p1!==p2)return authMsg('passwordMsg','비밀번호 확인이 일치하지 않습니다.');
-  try{const {error}=await sb.auth.updateUser({password:p1});if(error)throw error;await routeAfterFirstFactor();}catch(e){authMsg('passwordMsg',e.message||String(e));}
+  authMsgClear('passwordMsg');
+  const p1=document.getElementById('newPassword').value,p2=document.getElementById('newPassword2').value;
+  const policyError=validatePassword(p1);
+  if(policyError)return authMsg('passwordMsg',policyError);
+  if(p1!==p2)return authMsg('passwordMsg','비밀번호 확인이 일치하지 않습니다.');
+  try{
+    const {error}=await sb.auth.updateUser({password:p1});if(error)throw error;
+    markLoginWeek();
+    document.getElementById('newPassword').value='';document.getElementById('newPassword2').value='';
+    await routeAfterFirstFactor();
+  }catch(e){authMsg('passwordMsg',e.message||String(e));}
 });
 document.getElementById('enrollVerifyBtn').addEventListener('click',async()=>{
   authMsgClear('enrollMsg');const code=document.getElementById('enrollCode').value.trim();if(!/^\d{6}$/.test(code))return authMsg('enrollMsg','6자리 숫자를 입력하세요.');
@@ -1149,12 +1352,54 @@ document.getElementById('mfaVerifyBtn').addEventListener('click',async()=>{
 });
 
 async function boot(){
-  if(SUPABASE_PUBLISHABLE_KEY.startsWith('PASTE_')){authMsg('loginMsg','운영용 Publishable key가 아직 설정되지 않았습니다. GitHub index.html의 SUPABASE_PUBLISHABLE_KEY 값을 먼저 입력하세요.');return;}
-  const invite=isInviteReturn(); const {data:{session},error}=await sb.auth.getSession();
+  if(SUPABASE_PUBLISHABLE_KEY.startsWith('PASTE_')){
+    authMsg('loginMsg','운영용 Publishable key가 아직 설정되지 않았습니다. GitHub index.html의 SUPABASE_PUBLISHABLE_KEY 값을 먼저 입력하세요.');
+    return;
+  }
+  const invite=isInviteReturn(), recovery=isRecoveryReturn();
+  const {data:{session},error}=await sb.auth.getSession();
   if(error){authMsg('loginMsg',error.message);cleanAuthHash();return;}
-  if(session){cleanAuthHash();if(invite)authShow('passwordScreen');else{try{await routeAfterFirstFactor();}catch(e){authShow('loginScreen');authMsg('loginMsg',e.message||String(e));}}}
-  else{cleanAuthHash();authShow('loginScreen');}
+
+  if(session){
+    if(recovery){
+      markLoginWeek();
+      document.getElementById('passwordScreenTitle').textContent='새 비밀번호 설정';
+      document.getElementById('passwordScreenSub').textContent='재설정할 새 비밀번호를 입력하세요.';
+      cleanAuthHash();
+      authShow('passwordScreen');
+      return;
+    }
+    if(invite){
+      markLoginWeek();
+      document.getElementById('passwordScreenTitle').textContent='최초 비밀번호 설정';
+      document.getElementById('passwordScreenSub').textContent='초대받은 계정의 현황판 로그인 비밀번호를 설정합니다.';
+      cleanAuthHash();
+      authShow('passwordScreen');
+      return;
+    }
+    if(!(await enforceWeeklySession())){
+      cleanAuthHash();authShow('loginScreen');authMsg('loginMsg','새 주가 시작되어 다시 로그인해 주세요.');return;
+    }
+    // Existing same-browser session: allow normal MFA/app routing.
+    if(!sessionStorage.getItem(WEEK_KEY))markLoginWeek();
+    cleanAuthHash();
+    try{await routeAfterFirstFactor();}catch(e){authShow('loginScreen');authMsg('loginMsg',e.message||String(e));}
+  }else{
+    cleanAuthHash();authShow('loginScreen');
+  }
 }
+
+sb.auth.onAuthStateChange((event)=>{
+  if(event==='PASSWORD_RECOVERY'){
+    setTimeout(()=>{
+      markLoginWeek();
+      document.getElementById('passwordScreenTitle').textContent='새 비밀번호 설정';
+      document.getElementById('passwordScreenSub').textContent='재설정할 새 비밀번호를 입력하세요.';
+      authShow('passwordScreen');
+    },0);
+  }
+});
+
 boot();
 </script>
 </body>
