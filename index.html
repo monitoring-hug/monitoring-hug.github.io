@@ -208,6 +208,21 @@ button,select{font:inherit}
 .user-strip{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:-14px 0 20px;color:#6D7885;font-size:13px}
 .user-role{font-weight:800;color:#1C75BC}.mini-btn{height:34px;padding:0 12px;border:1px solid #DCE4EC;border-radius:9px;background:#fff;color:#334152;cursor:pointer}
 .loading-overlay{position:fixed;inset:0;background:rgba(243,247,251,.88);display:none;place-items:center;z-index:3000;font-weight:800;color:#153B59}.loading-overlay.show{display:grid}
+
+.app-nav{display:flex;gap:8px;margin-right:auto}
+.nav-btn{height:34px;padding:0 13px;border:1px solid #DCE4EC;border-radius:9px;background:#fff;color:#334152;cursor:pointer;font-weight:800}
+.nav-btn.active{background:#1C75BC;color:#fff;border-color:#1C75BC}
+.update-page{max-width:1520px;margin:0 auto;padding:0 34px 70px}
+.update-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:6px 0 20px}
+.update-title{font-size:26px;margin:0;color:#153B59}.update-sub{color:#6D7885;font-size:13px;margin-top:7px}
+.update-layout{display:grid;grid-template-columns:minmax(300px,420px) minmax(0,1fr);gap:18px;align-items:start}
+.update-list,.update-detail{background:#fff;border:1px solid #E5EAF0;border-radius:16px;box-shadow:0 7px 22px rgba(35,61,87,.07)}
+.update-list{overflow:hidden}.update-search{padding:14px;border-bottom:1px solid #E5EAF0;display:grid;gap:8px}.update-search input,.update-search select,.edit-control{width:100%;height:40px;border:1px solid #DCE4EC;border-radius:9px;padding:0 11px;background:#fff;color:#334152}
+.metric-list{max-height:66vh;overflow:auto;padding:8px}.metric-row{padding:12px;border:1px solid transparent;border-radius:10px;cursor:pointer}.metric-row:hover{background:#F6F9FC}.metric-row.active{background:#EAF5FC;border-color:#B9DFF4}.metric-row-id{font-size:12px;font-weight:900;color:#1C75BC}.metric-row-name{font-size:14px;font-weight:800;margin-top:3px}.metric-row-meta{font-size:12px;color:#7A8794;margin-top:4px}
+.update-detail{padding:20px;min-height:420px}.detail-empty{color:#7A8794;text-align:center;padding:80px 20px}.edit-title{font-size:21px;font-weight:900;color:#182433}.edit-meta{font-size:13px;color:#6D7885;margin:7px 0 18px}.readonly-box{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:18px}.readonly-item{background:#F7F9FB;border:1px solid #E8EDF2;border-radius:10px;padding:10px}.readonly-label{font-size:11px;color:#83909C;font-weight:800}.readonly-value{font-size:14px;font-weight:800;margin-top:4px}
+.edit-section-title{font-size:15px;font-weight:900;margin:20px 0 10px}.edit-item{border:1px solid #E5EAF0;border-radius:12px;padding:13px;margin-bottom:10px}.edit-item-head{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px}.edit-order{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#EAF5FC;color:#1C75BC;font-weight:900;font-size:12px;flex:0 0 auto}.edit-content{font-weight:800;line-height:1.45}.edit-grid{display:grid;grid-template-columns:160px 180px minmax(0,1fr);gap:10px;align-items:end}.field-label{font-size:11px;color:#83909C;font-weight:800;margin-bottom:5px}.save-btn{height:40px;border:0;border-radius:9px;background:#1C75BC;color:#fff;font-weight:900;padding:0 16px;cursor:pointer}.save-btn:disabled{opacity:.55}.inline-msg{font-size:12px;margin-top:8px}.inline-msg.ok{color:#166534}.inline-msg.error{color:#9F1239}.quant-box{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;max-width:650px}.security-note{font-size:12px;color:#6D7885;background:#F7F9FB;border:1px solid #E5EAF0;border-radius:10px;padding:10px;margin-top:14px}
+@media(max-width:900px){.update-layout{grid-template-columns:1fr}.metric-list{max-height:300px}.edit-grid{grid-template-columns:1fr 1fr}.readonly-box{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.update-page{padding:0 16px 50px}.update-head{display:block}.edit-grid,.quant-box,.readonly-box{grid-template-columns:1fr}.user-strip{flex-wrap:wrap}.app-nav{width:100%;order:2}.nav-btn{flex:1}}
 </style>
 </head>
 <body>
@@ -277,6 +292,23 @@ button,select{font:inherit}
     </div>
   </section>
   <main id="dashboard"></main>
+</div>
+
+<div id="updateRoot" class="update-page app-hidden">
+  <div class="update-head">
+    <div><h2 class="update-title">실적 업데이트</h2><div class="update-sub">부서 담당자는 전체 지표를 조회하고 허용된 실적·상태 항목만 수정할 수 있습니다.</div></div>
+  </div>
+  <div class="update-layout">
+    <section class="update-list">
+      <div class="update-search">
+        <input id="updateKeyword" type="search" placeholder="지표ID 또는 과제명 검색">
+        <select id="updateDepartment"><option value="">담당부서 전체</option></select>
+        <select id="updateMeasurement"><option value="">측정방식 전체</option></select>
+      </div>
+      <div id="metricList" class="metric-list"></div>
+    </section>
+    <section id="updateDetail" class="update-detail"><div class="detail-empty">왼쪽에서 수정할 지표를 선택하세요.</div></section>
+  </div>
 </div>
 
 <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -548,6 +580,9 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 });
 let currentProfile=null;
 let refreshTimer=null;
+let DB_METRICS=[];
+let DB_ITEMS=[];
+let selectedMetricUuid=null;
 let enrollFactorId=null;
 
 function authShow(id){
@@ -581,6 +616,7 @@ async function loadDashboardData(){
       sb.from('metric_items').select('id,metric_id,item_order,content,status,planned_schedule,completion_date,updated_at').order('item_order',{ascending:true})
     ]);
     if(mRes.error)throw mRes.error; if(iRes.error)throw iRes.error;
+    DB_METRICS=mRes.data||[]; DB_ITEMS=iRes.data||[];
     const byMetric=new Map();
     (iRes.data||[]).forEach(it=>{if(!byMetric.has(it.metric_id))byMetric.set(it.metric_id,[]);byMetric.get(it.metric_id).push(it);});
     RAW_DATA=(mRes.data||[]).map(m=>{
@@ -595,6 +631,7 @@ async function loadDashboardData(){
     const stamps=[...(mRes.data||[]).map(x=>x.updated_at),...(iRes.data||[]).map(x=>x.updated_at)].filter(Boolean).map(x=>new Date(x)).filter(x=>!Number.isNaN(x.getTime()));
     DATA_REFERENCE_DATE=stamps.length?fmtDate(new Date(Math.max(...stamps.map(d=>d.getTime())))):'-';
     rebuildFilters(); renderOverview(); render();
+    if(currentProfile && ['editor','admin'].includes(currentProfile.role)){buildUpdateFilters(); renderMetricList(); if(selectedMetricUuid) renderUpdateDetail(selectedMetricUuid);}
   } finally {document.getElementById('loadingOverlay').classList.remove('show');}
 }
 
@@ -605,12 +642,79 @@ async function enterApp(){
   document.getElementById('appRoot').classList.remove('app-hidden');
   const strip=document.createElement('div');strip.className='user-strip';
   const roleLabel={viewer:'조회자',editor:'부서 담당자',admin:'기획조정실'}[p.role]||p.role;
-  strip.innerHTML=`<span>${safe(p.display_name||p.email||'')}</span><span class="user-role">${safe(roleLabel)}</span><button id="appLogoutBtn" class="mini-btn">로그아웃</button>`;
+  const canEdit=['editor','admin'].includes(p.role);
+  strip.innerHTML=`${canEdit?'<div class="app-nav"><button id="navDashboard" class="nav-btn active">현황판</button><button id="navUpdate" class="nav-btn">실적 업데이트</button></div>':''}<span>${safe(p.display_name||p.email||'')}</span><span class="user-role">${safe(roleLabel)}</span><button id="appLogoutBtn" class="mini-btn">로그아웃</button>`;
   document.querySelector('.page').insertBefore(strip,document.querySelector('.page').firstChild);
   document.getElementById('appLogoutBtn').addEventListener('click',async()=>{await sb.auth.signOut();location.reload();});
+  if(canEdit){
+    document.getElementById('navDashboard').addEventListener('click',()=>switchAppView('dashboard'));
+    document.getElementById('navUpdate').addEventListener('click',()=>switchAppView('update'));
+  }
   await loadDashboardData();
   clearInterval(refreshTimer);refreshTimer=setInterval(()=>loadDashboardData().catch(console.error),60000);
 }
+
+
+function switchAppView(view){
+  const page=document.querySelector('#appRoot > .page');
+  const upd=document.getElementById('updateRoot');
+  const dashBtn=document.getElementById('navDashboard'), updBtn=document.getElementById('navUpdate');
+  if(view==='update'){
+    page.classList.add('app-hidden'); upd.classList.remove('app-hidden');
+    if(dashBtn)dashBtn.classList.remove('active'); if(updBtn)updBtn.classList.add('active');
+    // keep user strip visible by moving a compact navigation copy into update page when needed
+    let top=document.getElementById('updateUserStrip');
+    if(!top){top=document.createElement('div');top.id='updateUserStrip';top.className='user-strip';top.innerHTML=`<div class="app-nav"><button id="updNavDashboard" class="nav-btn">현황판</button><button class="nav-btn active">실적 업데이트</button></div><span>${safe(currentProfile.display_name||currentProfile.email||'')}</span><span class="user-role">${safe({viewer:'조회자',editor:'부서 담당자',admin:'기획조정실'}[currentProfile.role]||currentProfile.role)}</span><button id="updLogoutBtn" class="mini-btn">로그아웃</button>`;upd.insertBefore(top,upd.firstChild);document.getElementById('updNavDashboard').onclick=()=>switchAppView('dashboard');document.getElementById('updLogoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload();};}
+    buildUpdateFilters();renderMetricList();
+  }else{
+    upd.classList.add('app-hidden'); page.classList.remove('app-hidden');
+    if(dashBtn)dashBtn.classList.add('active'); if(updBtn)updBtn.classList.remove('active');
+  }
+}
+function buildUpdateFilters(){
+  const dep=document.getElementById('updateDepartment'), meas=document.getElementById('updateMeasurement'); if(!dep||!meas)return;
+  const curD=dep.value,curM=meas.value;
+  const deps=[...new Set(DB_METRICS.flatMap(m=>m.responsible_departments||[]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
+  const ms=[...new Set(DB_METRICS.map(m=>m.measurement_type).filter(Boolean))];
+  dep.innerHTML='<option value="">담당부서 전체</option>'+deps.map(x=>`<option value="${safe(x)}">${safe(x)}</option>`).join('');
+  meas.innerHTML='<option value="">측정방식 전체</option>'+ms.map(x=>`<option value="${safe(x)}">${safe(x)}</option>`).join('');
+  dep.value=deps.includes(curD)?curD:'';meas.value=ms.includes(curM)?curM:'';
+}
+function filteredUpdateMetrics(){
+  const q=(document.getElementById('updateKeyword')?.value||'').trim().toLowerCase();
+  const d=document.getElementById('updateDepartment')?.value||'', m=document.getElementById('updateMeasurement')?.value||'';
+  return DB_METRICS.filter(x=>{const hay=`${x.indicator_id} ${x.metric_name} ${x.detail_name}`.toLowerCase();return(!q||hay.includes(q))&&(!d||(x.responsible_departments||[]).includes(d))&&(!m||x.measurement_type===m);});
+}
+function renderMetricList(){
+  const root=document.getElementById('metricList');if(!root)return;
+  root.innerHTML=filteredUpdateMetrics().map(m=>`<div class="metric-row ${selectedMetricUuid===m.id?'active':''}" data-mid="${m.id}"><div class="metric-row-id">${safe(m.indicator_id)}</div><div class="metric-row-name">${safe(m.detail_name)}</div><div class="metric-row-meta">${safe((m.responsible_departments||[]).join(' / '))} · ${safe(m.measurement_type)}</div></div>`).join('')||'<div class="detail-empty">검색 결과가 없습니다.</div>';
+  root.querySelectorAll('.metric-row').forEach(el=>el.onclick=()=>{selectedMetricUuid=el.dataset.mid;renderMetricList();renderUpdateDetail(selectedMetricUuid);});
+}
+function renderUpdateDetail(id){
+  const m=DB_METRICS.find(x=>x.id===id), root=document.getElementById('updateDetail'); if(!m||!root)return;
+  const common=`<div class="edit-title">${safe(m.indicator_id)} · ${safe(m.detail_name)}</div><div class="edit-meta">${safe(m.metric_name)}</div><div class="readonly-box"><div class="readonly-item"><div class="readonly-label">담당부서</div><div class="readonly-value">${safe((m.responsible_departments||[]).join(' / ')||'-')}</div></div><div class="readonly-item"><div class="readonly-label">측정방식</div><div class="readonly-value">${safe(m.measurement_type)}</div></div></div>`;
+  if(m.measurement_type==='계량'){
+    root.innerHTML=common+`<div class="edit-section-title">계량 실적</div><div class="quant-box"><div><div class="field-label">목표</div><input class="edit-control" value="${safe(numText(m.quant_target,m.quant_unit))}" disabled></div><div><div class="field-label">현재 실적</div><input id="quantCurrent" class="edit-control" type="number" min="0" step="any" value="${m.quant_current??''}"></div><button id="saveQuant" class="save-btn">저장</button></div><div id="quantMsg" class="inline-msg"></div><div class="security-note">부서 담당자는 현재 실적만 수정할 수 있습니다. 목표·기본정보는 기획조정실 권한에서 관리합니다.</div>`;
+    document.getElementById('saveQuant').onclick=()=>saveQuant(m.id);
+  }else{
+    const items=DB_ITEMS.filter(x=>x.metric_id===m.id).sort((a,b)=>a.item_order-b.item_order);
+    root.innerHTML=common+`<div class="edit-section-title">상태 및 완료일자</div>`+items.map(it=>`<div class="edit-item"><div class="edit-item-head"><div class="edit-order">${it.item_order}</div><div class="edit-content">${safe(it.content)}</div></div><div class="edit-grid"><div><div class="field-label">상태</div><select id="status_${it.id}" class="edit-control"><option ${it.status==='완료'?'selected':''}>완료</option><option ${it.status==='진행중'?'selected':''}>진행중</option><option ${it.status==='대기'?'selected':''}>대기</option></select></div><div><div class="field-label">완료일자 (YY.MM.DD)</div><input id="date_${it.id}" class="edit-control" value="${safe(fmtDbDate(it.completion_date))}" placeholder="26.08.01"></div><button class="save-btn" data-save-item="${it.id}">저장</button></div><div id="msg_${it.id}" class="inline-msg"></div></div>`).join('')+`<div class="security-note">상태가 완료인 경우에만 완료일자가 필요합니다. 진행중/대기로 저장하면 완료일자는 자동으로 비웁니다.</div>`;
+    items.forEach(it=>{const s=document.getElementById(`status_${it.id}`),d=document.getElementById(`date_${it.id}`);const sync=()=>{if(s.value!=='완료'){d.value='';d.disabled=true}else d.disabled=false};s.onchange=sync;sync();});
+    root.querySelectorAll('[data-save-item]').forEach(b=>b.onclick=()=>saveItem(b.dataset.saveItem));
+  }
+}
+async function saveItem(itemId){
+  const s=document.getElementById(`status_${itemId}`),d=document.getElementById(`date_${itemId}`),msg=document.getElementById(`msg_${itemId}`);msg.textContent='';msg.className='inline-msg';
+  const status=s.value;const date=status==='완료'?d.value.trim():null;
+  if(status==='완료'&&!/^\d{2}\.\d{2}\.\d{2}$/.test(date||'')){msg.textContent='완료일자는 YY.MM.DD 형식으로 입력하세요.';msg.className='inline-msg error';return;}
+  try{const {error}=await sb.rpc('update_item_progress',{p_item_id:itemId,p_status:status,p_completion_date_text:date});if(error)throw error;msg.textContent='저장되었습니다.';msg.className='inline-msg ok';await loadDashboardData();}catch(e){msg.textContent=e.message||String(e);msg.className='inline-msg error';}
+}
+async function saveQuant(metricId){
+  const input=document.getElementById('quantCurrent'),msg=document.getElementById('quantMsg');const v=Number(input.value);msg.textContent='';msg.className='inline-msg';if(!Number.isFinite(v)||v<0){msg.textContent='실적은 0 이상의 숫자로 입력하세요.';msg.className='inline-msg error';return;}
+  try{const {error}=await sb.rpc('update_quant_progress',{p_metric_id:metricId,p_current:v});if(error)throw error;msg.textContent='저장되었습니다.';msg.className='inline-msg ok';await loadDashboardData();}catch(e){msg.textContent=e.message||String(e);msg.className='inline-msg error';}
+}
+['updateKeyword','updateDepartment','updateMeasurement'].forEach(id=>document.addEventListener('input',e=>{if(e.target?.id===id)renderMetricList();}));
+document.addEventListener('change',e=>{if(['updateDepartment','updateMeasurement'].includes(e.target?.id))renderMetricList();});
 
 async function routeAfterFirstFactor(){
   const {data:factorsData,error:factorsError}=await sb.auth.mfa.listFactors(); if(factorsError)throw factorsError;
