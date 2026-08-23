@@ -328,7 +328,7 @@ button,select{font:inherit}
 <body>
 <div id="authRoot" class="auth-shell">
   <main class="auth-card">
-    <div class="auth-badge">운영용 v5.0 · v3.2</div>
+    
     <h1 class="auth-title">주택 신속 공급대책 과제 현황판</h1>
     <div class="auth-sub">허용된 사용자만 로그인할 수 있습니다. Google Authenticator MFA 인증을 완료해야 업무 데이터에 접근할 수 있습니다.</div>
 
@@ -473,9 +473,10 @@ button,select{font:inherit}
         </div>
       </div>
       <div class="admin-note">
-        새 사용자의 <strong>초대/삭제</strong>는 Auth 관리자 권한이 필요한 작업이라 공개용 브라우저 키로 처리하지 않습니다.
-        현재 운영 방식대로 Supabase Dashboard의 Authentication → Users에서 초대하고,
-        여기서는 초대된 사용자의 <strong>표시명·역할·활성상태</strong>만 관리합니다.
+        신규 사용자는 <strong>Supabase Dashboard의 이메일 초대</strong> 또는 이 화면의 <strong>@khug.or.kr 개별 초대링크 생성</strong> 방식으로 등록할 수 있습니다.
+        생성된 초대링크의 현재 유효시간은 <strong>1시간</strong>입니다.
+        사용 중지는 계정을 삭제하지 않고 <strong>상태를 '비활성'</strong>으로 변경하여 처리합니다.
+        이 화면에서는 사용자의 <strong>이름·역할·활성상태</strong>를 관리하며, 이메일은 로그인 계정 확인용으로 표시됩니다.
       </div>
       <div id="adminUsers"></div>
     </div>
@@ -484,7 +485,7 @@ button,select{font:inherit}
   <section id="adminPanelAudit" class="admin-panel">
     <div class="admin-card">
       <div class="admin-toolbar">
-        <input id="auditSearch" type="search" placeholder="사용자, 지표ID, 단계·항목, 변경내용 검색">
+        <input id="auditSearch" type="search" placeholder="이름·이메일, 지표ID, 단계·항목, 변경내용 검색">
         <select id="auditDepartment"><option value="">담당부서 전체</option></select>
         <button id="auditReload" class="admin-btn secondary">새로고침</button>
       </div>
@@ -1171,12 +1172,13 @@ async function copyGeneratedInviteLink(){
 async function loadAdminUsers(){
   const root=document.getElementById('adminUsers'); if(!root)return;
   root.innerHTML='사용자 정보를 불러오는 중입니다...';
-  const {data,error}=await sb.from('profiles').select('id,display_name,role,is_active,updated_at').order('display_name',{ascending:true});
+  const {data,error}=await sb.from('profiles').select('id,display_name,email,role,is_active,updated_at').order('email',{ascending:true});
   if(error){root.textContent='조회 실패: '+error.message;return;}
   adminProfiles=data||[];
-  root.innerHTML=`<div style="overflow:auto"><table class="user-table"><thead><tr><th>사용자</th><th>역할</th><th>상태</th><th>저장</th></tr></thead><tbody>
+  root.innerHTML=`<div style="overflow:auto"><table class="user-table"><thead><tr><th>이름</th><th>이메일</th><th>역할</th><th>상태</th><th>저장</th></tr></thead><tbody>
     ${adminProfiles.map(p=>`<tr data-user-id="${p.id}">
-      <td><input class="au_name" value="${safe(p.display_name||'')}" style="width:100%;min-width:220px"></td>
+      <td><input class="au_name" value="${safe(p.display_name||'')}" placeholder="이름 입력" style="width:100%;min-width:130px"></td>
+      <td><span title="${safe(p.email||'')}">${safe(p.email||'-')}</span></td>
       <td><select class="au_role"><option value="viewer" ${p.role==='viewer'?'selected':''}>조회자</option><option value="editor" ${p.role==='editor'?'selected':''}>부서 담당자</option><option value="admin" ${p.role==='admin'?'selected':''}>기획조정실</option></select></td>
       <td><select class="au_active"><option value="true" ${p.is_active?'selected':''}>사용</option><option value="false" ${!p.is_active?'selected':''}>비활성</option></select></td>
       <td><button class="admin-btn small au_save">저장</button></td>
@@ -1184,14 +1186,19 @@ async function loadAdminUsers(){
   </tbody></table></div>`;
   root.querySelectorAll('.au_save').forEach(btn=>btn.onclick=async()=>{
     const tr=btn.closest('tr'),id=tr.dataset.userId;
-    const payload={display_name:tr.querySelector('.au_name').value.trim(),role:tr.querySelector('.au_role').value,is_active:tr.querySelector('.au_active').value==='true'};
+    const payload={
+      display_name:tr.querySelector('.au_name').value.trim()||null,
+      role:tr.querySelector('.au_role').value,
+      is_active:tr.querySelector('.au_active').value==='true'
+    };
     if(id===currentProfile.id && (!payload.is_active || payload.role!=='admin')){
       if(!confirm('현재 로그인 중인 본인의 기획조정실 권한을 낮추거나 비활성화하면 관리화면 접근을 잃을 수 있습니다. 계속할까요?'))return;
     }
     const {error}=await sb.from('profiles').update(payload).eq('id',id);
     if(error){alert('저장 실패: '+error.message);return;}
-    alert('사용자 권한이 저장되었습니다.');
+    alert('사용자 정보가 저장되었습니다.');
     if(id===currentProfile.id){currentProfile={...currentProfile,...payload};}
+    await loadAdminUsers();
   });
 }
 function compactAuditDiff(oldData,newData){
@@ -1206,10 +1213,10 @@ async function loadAuditLogs(){
   root.innerHTML='변경이력을 불러오는 중입니다...';
   const [aRes,pRes]=await Promise.all([
     sb.from('audit_logs').select('id,actor_user_id,table_name,operation,metric_id,item_id,old_data,new_data,changed_at').order('changed_at',{ascending:false}).limit(300),
-    sb.from('profiles').select('id,display_name')
+    sb.from('profiles').select('id,display_name,email')
   ]);
   if(aRes.error){root.textContent='조회 실패: '+aRes.error.message;return;}
-  const pmap=new Map((pRes.data||[]).map(x=>[x.id,x.display_name||x.id]));
+  const pmap=new Map((pRes.data||[]).map(x=>[x.id,{name:x.display_name||x.email||x.id,email:x.email||''}]));
   const mmap=new Map(DB_METRICS.map(x=>[x.id,x]));
   const imap=new Map(DB_ITEMS.map(x=>[x.id,x]));
 
@@ -1224,7 +1231,8 @@ async function loadAuditLogs(){
       : '지표 기본정보';
     return {
       ...r,
-      actor_name:pmap.get(r.actor_user_id)||r.actor_user_id||'시스템',
+      actor_name:(pmap.get(r.actor_user_id)?.name)||r.actor_user_id||'시스템',
+      actor_email:(pmap.get(r.actor_user_id)?.email)||'',
       indicator:m?.indicator_id||r.metric_id||'-',
       departments:m?.responsible_departments||[],
       item_label:itemLabel
@@ -1284,14 +1292,14 @@ function renderAuditTable(){
   const rows=adminAuditRows
     .filter(r=>!isInternalTempOrderOnly(r))
     .filter(r=>!dep||(r.departments||[]).includes(dep))
-    .filter(r=>!q||`${r.actor_name} ${r.indicator} ${r.item_label} ${(r.departments||[]).join(' ')} ${r.table_name} ${r.operation} ${friendlyAuditDiff(r)}`.toLowerCase().includes(q));
+    .filter(r=>!q||`${r.actor_name} ${r.actor_email||''} ${r.indicator} ${r.item_label} ${(r.departments||[]).join(' ')} ${r.table_name} ${r.operation} ${friendlyAuditDiff(r)}`.toLowerCase().includes(q));
 
   root.innerHTML=`<div class="audit-wrap"><table class="audit-table"><thead><tr>
     <th>일시</th><th>사용자</th><th>지표</th><th>단계·항목</th><th>담당부서</th><th>작업</th><th>변경내용</th>
   </tr></thead><tbody>
     ${rows.map(r=>`<tr>
       <td>${safe(new Date(r.changed_at).toLocaleString('ko-KR'))}</td>
-      <td>${safe(r.actor_name)}</td>
+      <td><span title="${safe(r.actor_email||'')}">${safe(r.actor_name)}</span></td>
       <td>${safe(r.indicator)}</td>
       <td>${safe(r.item_label)}</td>
       <td>${safe((r.departments||[]).join(' / ')||'-')}</td>
