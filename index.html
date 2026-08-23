@@ -1,12 +1,284 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>주택 신속 공급대책 과제 현황판</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>주택 신속 공급대책 과제 현황판 - 로그인</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --blue:#1C75BC; --sky:#009ED1; --green:#80C342;
+      --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; --bg:#f6f8fb;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,"Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink)}
+    .wrap{min-height:100vh;display:grid;place-items:center;padding:24px}
+    .card{width:min(460px,100%);background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px;box-shadow:0 14px 38px rgba(0,0,0,.07)}
+    h1{font-size:24px;margin:0 0 8px}
+    .sub{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:24px}
+    .screen{display:none}
+    .screen.active{display:block}
+    label{display:block;font-size:14px;font-weight:700;margin:14px 0 7px}
+    input{width:100%;height:46px;border:1px solid #cfd5dd;border-radius:10px;padding:0 12px;font-size:15px}
+    input:focus{outline:2px solid rgba(28,117,188,.18);border-color:var(--blue)}
+    button{width:100%;height:46px;border:0;border-radius:10px;background:var(--blue);color:white;font-weight:700;font-size:15px;cursor:pointer;margin-top:16px}
+    button.secondary{background:#eef2f7;color:var(--ink)}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    .msg{display:none;margin-top:14px;border-radius:10px;padding:11px 12px;font-size:13px;line-height:1.5}
+    .msg.show{display:block}
+    .msg.error{background:#fff1f2;color:#9f1239}
+    .msg.ok{background:#ecfdf5;color:#166534}
+    .qrbox{text-align:center;margin:18px 0}
+    .qrbox img{max-width:220px;width:100%;border:1px solid var(--line);padding:10px;background:#fff;border-radius:12px}
+    .secret{word-break:break-all;background:#f3f4f6;padding:10px;border-radius:8px;font-family:monospace;font-size:12px}
+    .badge{display:inline-block;background:#e8f3fb;color:#0e5d95;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:700;margin-bottom:14px}
+    .note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:14px}
+  </style>
 </head>
 <body>
-  <h1>주택 신속 공급대책 과제 현황판</h1>
-  <p>테스트 페이지입니다.</p>
+<div class="wrap">
+  <main class="card">
+    <div class="badge">v5.0 인증 테스트</div>
+    <h1>주택 신속 공급대책 과제 현황판</h1>
+    <div class="sub">허용된 사용자만 로그인할 수 있습니다. 로그인 후 MFA 인증을 완료해야 현황판에 접근할 수 있습니다.</div>
+
+    <section id="configScreen" class="screen active">
+      <h2 style="font-size:18px">최초 1회 연결 설정</h2>
+      <div class="sub">아래 Publishable key는 브라우저용 공개 키입니다. Secret key / service_role key는 절대 입력하지 마세요.</div>
+      <label for="pubKey">Supabase Publishable key</label>
+      <input id="pubKey" type="password" autocomplete="off" placeholder="sb_publishable_..." />
+      <button id="saveConfigBtn">이 브라우저에서 연결</button>
+      <div class="note">보안상 이 테스트 파일에는 키를 미리 넣지 않았습니다. 현재 브라우저의 sessionStorage에만 저장되며 브라우저를 닫으면 사라집니다.</div>
+      <div id="configMsg" class="msg"></div>
+    </section>
+
+    <section id="loginScreen" class="screen">
+      <h2 style="font-size:18px">로그인</h2>
+      <label for="email">이메일</label>
+      <input id="email" type="email" autocomplete="username" />
+      <label for="password">비밀번호</label>
+      <input id="password" type="password" autocomplete="current-password" />
+      <button id="loginBtn">로그인</button>
+      <div id="loginMsg" class="msg"></div>
+    </section>
+
+    <section id="passwordScreen" class="screen">
+      <h2 style="font-size:18px">최초 비밀번호 설정</h2>
+      <div class="sub">초대받은 계정의 비밀번호를 설정합니다.</div>
+      <label for="newPassword">새 비밀번호</label>
+      <input id="newPassword" type="password" autocomplete="new-password" minlength="12" />
+      <label for="newPassword2">새 비밀번호 확인</label>
+      <input id="newPassword2" type="password" autocomplete="new-password" minlength="12" />
+      <button id="setPasswordBtn">비밀번호 설정</button>
+      <div class="note">테스트 버전에서는 12자 이상을 요구합니다. 운영 전에는 Supabase 비밀번호 정책도 별도로 확인합니다.</div>
+      <div id="passwordMsg" class="msg"></div>
+    </section>
+
+    <section id="enrollScreen" class="screen">
+      <h2 style="font-size:18px">Google Authenticator 등록</h2>
+      <div class="sub">QR코드를 Google Authenticator로 스캔한 뒤 표시되는 6자리 코드를 입력하세요.</div>
+      <div class="qrbox"><img id="qrImg" alt="MFA QR code" /></div>
+      <div id="manualSecretWrap" style="display:none">
+        <label>QR 스캔이 안 될 때 수동 등록키</label>
+        <div id="manualSecret" class="secret"></div>
+      </div>
+      <label for="enrollCode">6자리 인증번호</label>
+      <input id="enrollCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000" />
+      <button id="enrollVerifyBtn">등록 및 인증</button>
+      <div id="enrollMsg" class="msg"></div>
+    </section>
+
+    <section id="mfaScreen" class="screen">
+      <h2 style="font-size:18px">MFA 인증</h2>
+      <div class="sub">Google Authenticator에 표시되는 6자리 코드를 입력하세요.</div>
+      <label for="mfaCode">6자리 인증번호</label>
+      <input id="mfaCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000" />
+      <button id="mfaVerifyBtn">인증</button>
+      <div id="mfaMsg" class="msg"></div>
+    </section>
+
+    <section id="readyScreen" class="screen">
+      <h2 style="font-size:18px">인증 완료</h2>
+      <div class="msg ok show">이메일 + MFA(AAL2) 인증까지 정상적으로 완료되었습니다.</div>
+      <div class="sub" style="margin-top:16px">현재는 보안 연결 테스트 단계라 DB 테이블을 아직 Data API에 공개하지 않았습니다. 다음 단계에서 최소 권한으로 순차 연결합니다.</div>
+      <button id="logoutBtn" class="secondary">로그아웃</button>
+    </section>
+  </main>
+</div>
+
+<script>
+(() => {
+  const SUPABASE_URL = 'https://vhrytlptivwyukgefywd.supabase.co';
+  const KEY_STORAGE = 'monitoring_hug_publishable_key';
+  let sb = null;
+  let enrollFactorId = null;
+
+  const $ = id => document.getElementById(id);
+  const screens = ['configScreen','loginScreen','passwordScreen','enrollScreen','mfaScreen','readyScreen'];
+
+  function show(id){
+    screens.forEach(x => $(x).classList.toggle('active', x === id));
+  }
+  function message(id, text, ok=false){
+    const el=$(id); el.textContent=text; el.className='msg show ' + (ok?'ok':'error');
+  }
+  function clearMessage(id){ const el=$(id); el.textContent=''; el.className='msg'; }
+  function cleanAuthHash(){
+    if (location.hash && (location.hash.includes('access_token=') || location.hash.includes('error='))) {
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+  }
+  function isInviteReturn(){
+    return location.hash.includes('type=invite') || location.search.includes('type=invite') || location.hash.includes('access_token=');
+  }
+  function initClient(key){
+    sb = supabase.createClient(SUPABASE_URL, key, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+  }
+
+  async function routeAfterFirstFactor(){
+    const { data: factorsData, error: factorsError } = await sb.auth.mfa.listFactors();
+    if (factorsError) throw factorsError;
+
+    const verified = (factorsData?.totp || []).filter(f => f.status === 'verified');
+    if (verified.length === 0) {
+      const { data, error } = await sb.auth.mfa.enroll({
+        factorType: 'totp',
+        friendlyName: 'monitoring-hug'
+      });
+      if (error) throw error;
+      enrollFactorId = data.id;
+      const qr = data?.totp?.qr_code || '';
+      $('qrImg').src = qr.startsWith('data:image') ? qr : 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(qr);
+      if (data?.totp?.secret) {
+        $('manualSecret').textContent = data.totp.secret;
+        $('manualSecretWrap').style.display = 'block';
+      }
+      show('enrollScreen');
+      return;
+    }
+
+    const { data: aal, error: aalError } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalError) throw aalError;
+    if (aal.currentLevel === 'aal2') {
+      show('readyScreen');
+    } else {
+      window._verifiedFactorId = verified[0].id;
+      show('mfaScreen');
+    }
+  }
+
+  async function boot(){
+    const key = sessionStorage.getItem(KEY_STORAGE);
+    if (!key) { show('configScreen'); return; }
+    initClient(key);
+
+    const invite = isInviteReturn();
+    const { data: { session }, error } = await sb.auth.getSession();
+
+    if (error) {
+      show('loginScreen');
+      message('loginMsg', '인증 세션을 확인하지 못했습니다: ' + error.message);
+      cleanAuthHash();
+      return;
+    }
+
+    if (session) {
+      cleanAuthHash();
+      if (invite) {
+        show('passwordScreen');
+      } else {
+        try { await routeAfterFirstFactor(); }
+        catch(e){ show('loginScreen'); message('loginMsg', e.message || String(e)); }
+      }
+    } else {
+      cleanAuthHash();
+      show('loginScreen');
+    }
+  }
+
+  $('saveConfigBtn').addEventListener('click', async () => {
+    clearMessage('configMsg');
+    const key = $('pubKey').value.trim();
+    if (!key.startsWith('sb_publishable_')) {
+      return message('configMsg','Publishable key 형식을 확인하세요. Secret key는 입력하지 마세요.');
+    }
+    sessionStorage.setItem(KEY_STORAGE, key);
+    location.reload();
+  });
+
+  $('loginBtn').addEventListener('click', async () => {
+    clearMessage('loginMsg');
+    const email=$('email').value.trim();
+    const password=$('password').value;
+    if (!email || !password) return message('loginMsg','이메일과 비밀번호를 입력하세요.');
+    $('loginBtn').disabled=true;
+    try{
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      await routeAfterFirstFactor();
+    }catch(e){ message('loginMsg', e.message || String(e)); }
+    finally{ $('loginBtn').disabled=false; }
+  });
+
+  $('setPasswordBtn').addEventListener('click', async () => {
+    clearMessage('passwordMsg');
+    const p1=$('newPassword').value, p2=$('newPassword2').value;
+    if (p1.length < 12) return message('passwordMsg','비밀번호는 12자 이상으로 입력하세요.');
+    if (p1 !== p2) return message('passwordMsg','비밀번호 확인이 일치하지 않습니다.');
+    $('setPasswordBtn').disabled=true;
+    try{
+      const { error } = await sb.auth.updateUser({ password:p1 });
+      if (error) throw error;
+      await routeAfterFirstFactor();
+    }catch(e){ message('passwordMsg', e.message || String(e)); }
+    finally{ $('setPasswordBtn').disabled=false; }
+  });
+
+  $('enrollVerifyBtn').addEventListener('click', async () => {
+    clearMessage('enrollMsg');
+    const code=$('enrollCode').value.trim();
+    if (!/^\d{6}$/.test(code)) return message('enrollMsg','6자리 숫자를 입력하세요.');
+    $('enrollVerifyBtn').disabled=true;
+    try{
+      const { error } = await sb.auth.mfa.challengeAndVerify({ factorId:enrollFactorId, code });
+      if (error) throw error;
+      const { data: aal, error: aalError } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aalError) throw aalError;
+      if (aal.currentLevel !== 'aal2') throw new Error('MFA 인증 수준이 AAL2로 올라가지 않았습니다.');
+      show('readyScreen');
+    }catch(e){ message('enrollMsg', e.message || String(e)); }
+    finally{ $('enrollVerifyBtn').disabled=false; }
+  });
+
+  $('mfaVerifyBtn').addEventListener('click', async () => {
+    clearMessage('mfaMsg');
+    const code=$('mfaCode').value.trim();
+    if (!/^\d{6}$/.test(code)) return message('mfaMsg','6자리 숫자를 입력하세요.');
+    $('mfaVerifyBtn').disabled=true;
+    try{
+      const { error } = await sb.auth.mfa.challengeAndVerify({ factorId:window._verifiedFactorId, code });
+      if (error) throw error;
+      const { data: aal, error: aalError } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aalError) throw aalError;
+      if (aal.currentLevel !== 'aal2') throw new Error('MFA 인증 수준이 AAL2로 올라가지 않았습니다.');
+      show('readyScreen');
+    }catch(e){ message('mfaMsg', e.message || String(e)); }
+    finally{ $('mfaVerifyBtn').disabled=false; }
+  });
+
+  $('logoutBtn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    show('loginScreen');
+  });
+
+  boot();
+})();
+</script>
 </body>
 </html>
