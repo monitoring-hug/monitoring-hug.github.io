@@ -275,6 +275,17 @@ button,select{font:inherit}
 .auth-link-btn:hover{text-decoration:underline}
 .password-rule{margin:12px 0;padding:10px 12px;border-radius:9px;background:#f5f8fb;border:1px solid #dce5ed;color:#4d6072;font-size:12px;line-height:1.55}
 
+
+.invite-box{margin-bottom:16px;padding:14px;border:1px solid #dce5ed;border-radius:12px;background:#f8fbfd}
+.invite-title{font-weight:900;color:#24465f;margin-bottom:6px}
+.invite-row{display:grid;grid-template-columns:minmax(240px,1fr) auto;gap:8px}
+.invite-row input{border:1px solid #cfd9e3;border-radius:9px;padding:9px 10px;font:inherit}
+.invite-result{display:none;margin-top:10px}
+.invite-result.show{display:block}
+.invite-link-wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:8px}
+.invite-link-wrap input{width:100%;border:1px solid #cfd9e3;border-radius:9px;padding:9px 10px;font:inherit;background:#fff}
+@media(max-width:620px){.invite-row,.invite-link-wrap{grid-template-columns:1fr}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -444,6 +455,23 @@ button,select{font:inherit}
 
   <section id="adminPanelUsers" class="admin-panel">
     <div class="admin-card">
+      <div class="invite-box">
+        <div class="invite-title">대량 초대용 개별 초대링크 생성</div>
+        <div class="admin-note" style="margin-bottom:10px">
+          Supabase 기본 초대메일 대신 이메일별 초대링크를 생성합니다. 생성된 링크는 회사메일 또는 메신저로 해당 사용자에게 개별 전달하세요.
+        </div>
+        <div class="invite-row">
+          <input id="inviteLinkEmail" type="email" placeholder="초대할 이메일 주소">
+          <button id="generateInviteLinkBtn" class="admin-btn">초대링크 생성</button>
+        </div>
+        <div id="inviteLinkMsg" class="note"></div>
+        <div id="inviteLinkResult" class="invite-result">
+          <div class="invite-link-wrap">
+            <input id="generatedInviteLink" type="text" readonly>
+            <button id="copyInviteLinkBtn" class="admin-btn secondary">링크 복사</button>
+          </div>
+        </div>
+      </div>
       <div class="admin-note">
         새 사용자의 <strong>초대/삭제</strong>는 Auth 관리자 권한이 필요한 작업이라 공개용 브라우저 키로 처리하지 않습니다.
         현재 운영 방식대로 Supabase Dashboard의 Authentication → Users에서 초대하고,
@@ -736,7 +764,7 @@ function checkBody(card,p){
 }
 // ===== Supabase 운영 연결 =====
 const SUPABASE_URL = 'https://vhrytlptivwyukgefywd.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_zXLV4ps7jJ51h5K-fSM1Fg_jwv-VxPb';
+const SUPABASE_PUBLISHABLE_KEY = 'PASTE_YOUR_SB_PUBLISHABLE_KEY_HERE';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth:{
     persistSession:true,
@@ -869,6 +897,8 @@ async function enterApp(){
     document.getElementById('auditSearch').addEventListener('input',renderAuditTable);
     document.getElementById('auditDepartment').addEventListener('change',renderAuditTable);
     document.getElementById('auditReload').addEventListener('click',loadAuditLogs);
+    document.getElementById('generateInviteLinkBtn').addEventListener('click',generateInviteLink);
+    document.getElementById('copyInviteLinkBtn').addEventListener('click',copyGeneratedInviteLink);
   }
 }
 
@@ -1085,6 +1115,56 @@ function renderAdminItems(metric,items,isNew){
     await loadDashboardData(); renderAdminMetricList(); renderAdminMetricDetail(metric.id);
   };
 }
+
+async function generateInviteLink(){
+  const emailEl=document.getElementById('inviteLinkEmail');
+  const msg=document.getElementById('inviteLinkMsg');
+  const result=document.getElementById('inviteLinkResult');
+  const out=document.getElementById('generatedInviteLink');
+  const btn=document.getElementById('generateInviteLinkBtn');
+  if(!emailEl||!msg||!result||!out||!btn)return;
+
+  const email=emailEl.value.trim();
+  msg.textContent=''; result.classList.remove('show'); out.value='';
+  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){
+    msg.textContent='올바른 이메일 주소를 입력하세요.'; return;
+  }
+
+  btn.disabled=true; btn.textContent='생성 중...';
+  try{
+    if(!(await requireAal2()))throw new Error('MFA 인증을 완료한 뒤 다시 시도하세요.');
+    const {data,error}=await sb.functions.invoke('generate-invite-link',{body:{email}});
+    if(error)throw error;
+    if(!data?.ok||!data?.inviteLink)throw new Error(data?.error||'초대링크 생성에 실패했습니다.');
+    out.value=data.inviteLink;
+    result.classList.add('show');
+    msg.textContent='초대링크가 생성되었습니다. 사용자에게 개별 전달하세요.';
+  }catch(e){
+    let message=e?.message||String(e);
+    try{
+      if(e?.context){
+        const body=await e.context.json();
+        if(body?.error)message=body.error;
+      }
+    }catch{}
+    msg.textContent='생성 실패: '+message;
+  }finally{
+    btn.disabled=false; btn.textContent='초대링크 생성';
+  }
+}
+async function copyGeneratedInviteLink(){
+  const input=document.getElementById('generatedInviteLink');
+  const msg=document.getElementById('inviteLinkMsg');
+  if(!input?.value)return;
+  try{
+    await navigator.clipboard.writeText(input.value);
+    msg.textContent='초대링크를 복사했습니다.';
+  }catch{
+    input.select();document.execCommand('copy');
+    msg.textContent='초대링크를 복사했습니다.';
+  }
+}
+
 async function loadAdminUsers(){
   const root=document.getElementById('adminUsers'); if(!root)return;
   root.innerHTML='사용자 정보를 불러오는 중입니다...';
