@@ -103,7 +103,10 @@
       <div id="profileBox" style="margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#f9fafb;line-height:1.7;font-size:14px;">
         사용자 권한을 확인하는 중입니다...
       </div>
-      <div class="sub" style="margin-top:16px">현재는 profiles 테이블만 Data API에 공개한 상태입니다. 다른 업무 데이터는 아직 공개하지 않았습니다.</div>
+      <div id="metricsBox" style="margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#f9fafb;line-height:1.7;font-size:14px;">
+        지표 조회를 확인하는 중입니다...
+      </div>
+      <div class="sub" style="margin-top:16px">현재는 profiles와 metrics 테이블만 Data API에 공개한 상태입니다. metric_items 등 다른 업무 데이터는 아직 공개하지 않았습니다.</div>
       <button id="logoutBtn" class="secondary">로그아웃</button>
     </section>
   </main>
@@ -175,6 +178,30 @@
     }
   }
 
+
+  async function loadMetricsPreview(){
+    const { data, error, count } = await sb
+      .from('metrics')
+      .select('indicator_id, metric_name, detail_name, measurement_type', { count: 'exact' })
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true })
+      .limit(5);
+
+    if (error) throw error;
+
+    const rows = (data || []).map(m =>
+      '<li><strong>' + m.indicator_id + '</strong> · ' +
+      m.metric_name + ' / ' + m.detail_name +
+      ' <span style="color:#6b7280">(' + m.measurement_type + ')</span></li>'
+    ).join('');
+
+    $('metricsBox').innerHTML =
+      '<strong>metrics 조회 성공</strong><br>' +
+      '활성 지표 수: <strong>' + (count ?? '-') + '</strong><br>' +
+      '<div style="margin-top:8px">앞의 최대 5개 지표:</div>' +
+      '<ol style="margin:6px 0 0 20px;padding:0">' + (rows || '<li>조회된 지표 없음</li>') + '</ol>';
+  }
+
   async function showReady(){
     show('readyScreen');
     $('profileBox').textContent = '사용자 권한을 확인하는 중입니다...';
@@ -183,6 +210,15 @@
     }catch(e){
       $('profileBox').innerHTML =
         '<span style="color:#9f1239"><strong>프로필 조회 실패:</strong> ' +
+        String(e.message || e) + '</span>';
+    }
+
+    $('metricsBox').textContent = '지표 조회를 확인하는 중입니다...';
+    try{
+      await loadMetricsPreview();
+    }catch(e){
+      $('metricsBox').innerHTML =
+        '<span style="color:#9f1239"><strong>metrics 조회 실패:</strong> ' +
         String(e.message || e) + '</span>';
     }
   }
