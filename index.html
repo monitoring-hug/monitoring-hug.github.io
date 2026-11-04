@@ -343,6 +343,34 @@ button,select{font:inherit}
 .edit-section-title{font-size:15px;font-weight:900;margin:20px 0 10px}.edit-item{border:1px solid #E5EAF0;border-radius:12px;padding:13px;margin-bottom:10px}.edit-item-head{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px}.edit-order{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#EAF5FC;color:#1C75BC;font-weight:900;font-size:12px;flex:0 0 auto}.edit-content{font-weight:800;line-height:1.45}.edit-grid{display:grid;grid-template-columns:160px 180px minmax(0,1fr);gap:10px;align-items:end}.field-label{font-size:11px;color:#83909C;font-weight:800;margin-bottom:5px}.save-btn{height:40px;border:0;border-radius:9px;background:#1C75BC;color:#fff;font-weight:900;padding:0 16px;cursor:pointer}.save-btn:disabled{opacity:.55}.inline-msg{font-size:12px;margin-top:8px}.inline-msg.ok{color:#166534}.inline-msg.error{color:#9F1239}.quant-box{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;max-width:650px}.security-note{font-size:12px;color:#6D7885;background:#F7F9FB;border:1px solid #E5EAF0;border-radius:10px;padding:10px;margin-top:14px}
 @media(max-width:900px){.update-layout{grid-template-columns:1fr}.metric-list{max-height:300px}.edit-grid{grid-template-columns:1fr 1fr}.readonly-box{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.update-page{padding:0 16px 50px}.update-head{display:block}.edit-grid,.quant-box,.readonly-box{grid-template-columns:1fr}.user-strip{flex-wrap:wrap}.app-nav{width:100%;order:2}.nav-btn{flex:1}}
+/* 실적집계 */
+.count-card .card-head{grid-template-columns:1fr}
+.count-tiles{display:grid;grid-template-columns:repeat(var(--count-n,3),minmax(0,1fr));gap:12px;margin:18px 0 14px}
+.count-tile{min-width:0;border:1px solid #E2E9EF;border-radius:14px;padding:14px 10px 12px;text-align:center;background:linear-gradient(#FBFDFF,#F5F9FD)}
+.count-label{font-size:14px;font-weight:900;color:#3F5163;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.count-day{margin-top:5px;font-size:12.5px;font-weight:800;color:var(--hug-sky)}
+.count-day.past{color:#7D8995}
+.count-big{font-size:32px;font-weight:900;color:#172230;letter-spacing:-1px;line-height:1.15}
+.count-big small{font-size:15px;font-weight:800;margin-left:2px;color:#4A5C6D}
+.count-cum{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:13px;color:#5C6B7A;font-weight:800}
+.count-cum b{color:#172230;font-size:15px}
+.count-empty{margin:18px 0 14px;padding:22px;text-align:center;color:#7A8794;background:#F7F9FB;border:1px dashed #D6E0E8;border-radius:12px;font-size:13px}
+.today-badge{display:inline-block;font-size:11px;font-weight:900;color:#fff;background:var(--hug-sky);border-radius:999px;padding:1px 7px;margin-left:5px;vertical-align:1px}
+.modal.count-modal{width:min(920px,98vw)}
+.count-table-wrap{max-height:56vh;overflow:auto;border:1px solid #E2E9EF;border-radius:13px}
+.count-table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
+.count-table th{position:sticky;top:0;z-index:1;background:#F5F8FB;color:#526272;font-size:13px;font-weight:900;padding:11px 14px;text-align:right;border-bottom:1px solid #E2E9EF}
+.count-table td{padding:10px 14px;text-align:right;border-bottom:1px solid #EDF1F5;font-weight:700;color:#334152;white-space:nowrap}
+.count-table th:first-child,.count-table td:first-child{text-align:left}
+.count-table tr.is-today td{background:#EEF8FD;color:#0B5E86;font-weight:900}
+.count-table tr.base td{background:#FAFBFC;color:#6D7885}
+.count-table tr.total td{background:#16324A;color:#fff;font-weight:900;border-bottom:0}
+.count-table .dim{color:#9AA6B2;font-weight:600;font-size:12.5px;margin-left:6px}
+.count-table td .admin-btn{margin-left:4px}
+.count-entry{display:grid;grid-template-columns:170px repeat(var(--count-n,3),minmax(90px,1fr)) auto;gap:10px;align-items:end;max-width:900px}
+.count-item-head,.count-item-edit{display:grid;grid-template-columns:70px minmax(160px,1fr) 160px auto;gap:8px;align-items:center}
+.count-item-head{font-size:11px;font-weight:850;color:#83909C;padding:0 0 4px}
+@media(max-width:620px){.count-tiles{grid-template-columns:1fr 1fr}.count-entry{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -542,6 +570,7 @@ function parseNumber(text){
   return m ? Number(m[0]) : 0;
 }
 function progress(card){
+  if(isCountType(card.measurement)) return 0;
   if(card.measurement==='계량'){
     const target=parseNumber(card.items[0]?.content), current=parseNumber(card.items[0]?.status);
     if(!target) return 0;
@@ -553,6 +582,7 @@ function progress(card){
   return Math.round((done/total)*100);
 }
 function cardStatus(card){
+  if(isCountType(card.measurement)) return card.counts&&card.counts.latestDate?'진행중':'대기';
   const p=progress(card);
   if(p>=100) return '완료';
   if(card.measurement==='계량') return p>0 ? '진행중' : '대기';
@@ -572,6 +602,7 @@ function renderOverview(){
 
 function ringColor(p){ return p>=100 ? COLORS.green : (p>0 ? COLORS.sky : COLORS.gray); }
 function measureSummary(card){
+  if(isCountType(card.measurement)) return {target:'-',actual:'-'};
   const item=card.items[0] || {};
   if(card.measurement==='계량') return {target:item.content || '-', actual:item.status || '-'};
 
@@ -677,6 +708,7 @@ function compactCardSummary(it){
   return s.length>16?s.slice(0,15)+'…':s;
 }
 function cardHTML(card){
+  if(isCountType(card.measurement)) return countCardHTML(card);
   const p=progress(card), sm=measureSummary(card), clickable=card.measurement!=='계량', arr=card.items||[];
   const done=arr.filter(x=>x.status==='완료').length;
   const progressCaption=card.measurement==='계량'?'':`전체 ${arr.length}${card.measurement==='비계량-체크'?'항목':'단계'} 중 ${done}${card.measurement==='비계량-체크'?'항목':'단계'} 완료`;
@@ -703,7 +735,7 @@ function render(){
   const sectionHTML=order.map(cat=>{
     const cards=list.filter(c=>c.category===cat);
     if(!cards.length) return '';
-    const showLegend=cards.some(c=>c.measurement!=='계량');
+    const showLegend=cards.some(c=>c.measurement!=='계량'&&!isCountType(c.measurement));
     const legend=showLegend?`<div class="section-legend" aria-label="상태 범례"><span class="legend-item"><span class="legend-dot complete"></span>완료</span><span class="legend-item"><span class="legend-dot ongoing"></span>진행중</span><span class="legend-item"><span class="legend-dot waiting"></span>대기</span></div>`:'';
     return `<section class="section"><div class="section-heading"><div class="section-title">${safe(cat)}</div><span class="section-count">${cards.length}개</span>${legend}</div><div class="card-grid">${cards.map(cardHTML).join('')}</div></section>`;
   }).join('');
@@ -719,6 +751,8 @@ const backdrop=document.getElementById('modalBackdrop');
 const closeBtn=document.getElementById('modalClose');
 function openModal(id){
   const card=RAW_DATA.find(c=>c.id===id); if(!card || card.measurement==='계량') return;
+  document.querySelector('#modalBackdrop .modal').classList.toggle('count-modal',isCountType(card.measurement));
+  if(isCountType(card.measurement)){openCountModal(card);return;}
   const p=progress(card);
   document.getElementById('modalEyebrow').textContent=card.metric;
   document.getElementById('modalTitle').textContent=card.detail;
@@ -807,6 +841,58 @@ function checkBody(card,p){
     <div class="check-list-scroll"><div class="check-list">${items}</div></div>
   </div>`;
 }
+// ===== 실적집계 카드 / 팝업 =====
+function countCardHTML(card){
+  const c=card.counts||{rows:[],latestDate:null,baselineDate:null,available:false};
+  const today=kstTodayIso();
+  const isToday=c.latestDate===today;
+  const dayText=c.latestDate?(isToday?'금일':dayLabel(c.latestDate)):'입력 전';
+  const title=`<div class="card-title-block"><div class="metric-name">${safe(card.metric)}</div><div class="detail-title">${safe(card.detail)}</div></div>`;
+  let body;
+  if(!c.available) body='<div class="count-empty">집계 데이터를 불러오지 못했습니다.</div>';
+  else if(!c.rows.length) body='<div class="count-empty">집계 항목이 아직 설정되지 않았습니다.</div>';
+  else body=`<div class="count-tiles" style="--count-n:${Math.min(c.rows.length,4)}">${c.rows.map(r=>`<div class="count-tile"><div class="count-label" title="${safe(r.label)}">${safe(r.label)}</div><div class="count-day ${isToday?'':'past'}">${safe(dayText)}</div><div class="count-big">${c.latestDate?`${countInt(r.latest)}<small>건</small>`:'-'}</div><div class="count-cum">누계 <b>${countInt(r.cumulative)}</b>건</div></div>`).join('')}</div>`;
+  return `<article class="card is-clickable count-card" tabindex="0" data-id="${safe(card.id)}" role="button" aria-label="${safe(card.detail)} 일자별 실적 보기">
+    <div class="card-head">${title}</div>
+    ${body}
+    <div class="card-footer">
+      <div class="card-footer-item">${cardInfoIcon('dept')}<span class="card-footer-label">담당부서</span><span class="card-footer-value" title="${safe(card.department)}">${safe(card.department||'-')}</span></div>
+      <div class="card-footer-item">${cardInfoIcon('calendar')}<span class="card-footer-label">기준일</span><span class="card-footer-value">${safe(c.latestDate?fmtDbDate(c.latestDate):'-')}${isToday?'<span class="today-badge">금일</span>':''}</span></div>
+    </div>
+  </article>`;
+}
+const COUNT_POPUP_ROW_LIMIT=900;
+async function openCountModal(card){
+  const c=card.counts||{rows:[]};
+  document.getElementById('modalEyebrow').textContent=card.metric;
+  document.getElementById('modalTitle').textContent=card.detail;
+  document.getElementById('modalInfo').innerHTML=`<span>담당부서&nbsp; <strong>${safe(card.department||'-')}</strong></span><span>기초누계 기준일&nbsp; <strong>${safe(c.baselineDate?fmtDbDate(c.baselineDate):'-')}</strong></span><span>최근 입력&nbsp; <strong>${safe(c.latestDate?fmtDbDate(c.latestDate):'-')}</strong></span>`;
+  const body=document.getElementById('modalBody');
+  body.innerHTML='<div class="modal-note">일자별 실적을 불러오는 중입니다...</div>';
+  backdrop.classList.add('open');
+  document.body.style.overflow='hidden';
+  closeBtn.focus();
+  if(!c.rows||!c.rows.length){body.innerHTML='<div class="count-empty">집계 항목이 아직 설정되지 않았습니다.</div>';return;}
+  const {data,error}=await sb.from('metric_daily_counts').select('count_item_id,record_date,count_value').eq('metric_id',card.uuid).order('record_date',{ascending:false}).limit(COUNT_POPUP_ROW_LIMIT);
+  if(error){body.innerHTML=`<div class="count-empty">일자별 실적을 불러오지 못했습니다: ${safe(error.message)}</div>`;return;}
+  body.innerHTML=countHistoryTable(c,data||[],(data||[]).length>=COUNT_POPUP_ROW_LIMIT);
+}
+function countHistoryTable(c,rows,truncated){
+  const byDate=new Map();
+  rows.forEach(r=>{if(!byDate.has(r.record_date))byDate.set(r.record_date,{});byDate.get(r.record_date)[r.count_item_id]=Number(r.count_value)||0;});
+  let dates=[...byDate.keys()].sort().reverse();
+  if(truncated&&dates.length>1)dates=dates.slice(0,-1); // 한도에 걸린 마지막 날짜는 일부 항목만 불러왔을 수 있어 제외
+  const today=kstTodayIso();
+  const cell=(d,id)=>{const v=byDate.get(d)[id];return v===undefined?'-':countInt(v);};
+  const head=`<tr><th>일자</th>${c.rows.map(r=>`<th>${safe(r.label)}</th>`).join('')}</tr>`;
+  const dayRows=dates.map(d=>`<tr class="${d===today?'is-today':''}"><td>${safe(fmtDbDate(d))} (${WEEKDAY_KO[isoWeekday(d)]})${d===today?' · 금일':''}</td>${c.rows.map(r=>`<td>${cell(d,r.id)}</td>`).join('')}</tr>`).join('');
+  const empty=dates.length?'':`<tr><td colspan="${c.rows.length+1}" style="text-align:center;color:#7A8794">입력된 일자별 실적이 없습니다.</td></tr>`;
+  const baseRow=`<tr class="base"><td>기초누계<span class="dim">${c.baselineDate?'~'+safe(fmtDbDate(c.baselineDate))+', ':''}현황판 도입 전</span></td>${c.rows.map(r=>`<td>${countInt(r.baseline)}</td>`).join('')}</tr>`;
+  const totalRow=`<tr class="total"><td>누계</td>${c.rows.map(r=>`<td>${countInt(r.cumulative)}</td>`).join('')}</tr>`;
+  return `<h3 class="block-title">일자별 실적</h3>
+  <div class="count-table-wrap"><table class="count-table"><thead>${head}</thead><tbody>${dayRows}${empty}${baseRow}${totalRow}</tbody></table></div>
+  <div class="modal-note">최근 날짜가 위에 표시되며, 입력이 없는 날(주말·휴일 등)은 표에 나오지 않습니다.${truncated?` 기록이 많아 최근 ${dates.length}일만 표시합니다. 누계는 전체 기간 기준입니다.`:''}</div>`;
+}
 // ===== Supabase 운영 연결 =====
 const SUPABASE_URL = 'https://vhrytlptivwyukgefywd.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_zXLV4ps7jJ51h5K-fSM1Fg_jwv-VxPb';
@@ -821,6 +907,11 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 let currentProfile=null;
 let DB_METRICS=[];
 let DB_ITEMS=[];
+let DB_COUNT_ITEMS=[];
+let DB_COUNT_SUMMARY=[];
+let COUNT_FEATURE=false;
+let COUNT_LAST_UPDATE=null;
+let COUNT_FLASH=null;
 let selectedMetricUuid=null;
 let enrollFactorId=null;
 
@@ -875,6 +966,14 @@ async function fullSignOut(){
 }
 function fmtDate(v){if(!v)return ''; const d=new Date(v); if(Number.isNaN(d.getTime()))return String(v); return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(d).replace(/\. /g,'.').replace(/\.$/,'');}
 function fmtDbDate(v){if(!v)return ''; const [y,m,d]=String(v).split('-'); return y&&m&&d?`${y.slice(2)}.${m}.${d}`:String(v);}
+const COUNT_TYPE='실적집계';
+const WEEKDAY_KO='일월화수목금토';
+function isCountType(t){return t===COUNT_TYPE;}
+function kstTodayIso(){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const g=t=>p.find(x=>x.type===t).value;return `${g('year')}-${g('month')}-${g('day')}`;}
+function isoAddDays(iso,n){const [y,m,d]=String(iso).split('-').map(Number);return new Date(Date.UTC(y,m-1,d+n)).toISOString().slice(0,10);}
+function isoWeekday(iso){const [y,m,d]=String(iso).split('-').map(Number);return new Date(Date.UTC(y,m-1,d)).getUTCDay();}
+function dayLabel(iso){if(!iso)return '';const [,m,d]=String(iso).split('-').map(Number);return `${m}.${d}(${WEEKDAY_KO[isoWeekday(iso)]})`;}
+function countInt(v){return (Number(v)||0).toLocaleString('ko-KR');}
 function numText(v,unit){if(v===null||v===undefined||v==='')return '-'; const n=Number(v); const t=Number.isFinite(n)?n.toLocaleString('ko-KR'):String(v); return `${t}${unit||''}`;}
 
 async function requireAal2(){
@@ -899,22 +998,55 @@ async function loadDashboardData(){
     ]);
     if(mRes.error)throw mRes.error; if(iRes.error)throw iRes.error;
     DB_METRICS=mRes.data||[]; DB_ITEMS=iRes.data||[];
+    await loadCountData();
     const byMetric=new Map();
     (iRes.data||[]).forEach(it=>{if(!byMetric.has(it.metric_id))byMetric.set(it.metric_id,[]);byMetric.get(it.metric_id).push(it);});
     RAW_DATA=(mRes.data||[]).map(m=>{
       let items=[];
-      if(m.measurement_type==='계량'){
+      if(isCountType(m.measurement_type)){
+        items=[];
+      }else if(m.measurement_type==='계량'){
         items=[{content:numText(m.quant_target,m.quant_unit),status:numText(m.quant_current,m.quant_unit),schedule:m.metric_schedule||'',completedDate:''}];
       }else{
         items=(byMetric.get(m.id)||[]).map(it=>({content:it.content,cardSummary:it.card_summary||'',status:it.status,schedule:it.planned_schedule||'',completedDate:fmtDbDate(it.completion_date)}));
       }
-      return {id:m.indicator_id,category:m.category,metric:m.metric_name,detail:m.detail_name,department:(m.responsible_departments||[]).join(' / '),measurement:m.measurement_type,items};
+      return {id:m.indicator_id,category:m.category,metric:m.metric_name,detail:m.detail_name,department:(m.responsible_departments||[]).join(' / '),measurement:m.measurement_type,items,uuid:m.id,counts:isCountType(m.measurement_type)?buildCountView(m):null};
     });
-    const stamps=[...(mRes.data||[]).map(x=>x.updated_at),...(iRes.data||[]).map(x=>x.updated_at)].filter(Boolean).map(x=>new Date(x)).filter(x=>!Number.isNaN(x.getTime()));
+    const stamps=[...(mRes.data||[]).map(x=>x.updated_at),...(iRes.data||[]).map(x=>x.updated_at),...DB_COUNT_ITEMS.map(x=>x.updated_at),COUNT_LAST_UPDATE].filter(Boolean).map(x=>new Date(x)).filter(x=>!Number.isNaN(x.getTime()));
     DATA_REFERENCE_DATE=stamps.length?fmtDate(new Date(Math.max(...stamps.map(d=>d.getTime())))):'-';
     rebuildFilters(); renderOverview(); render();
     if(currentProfile && ['editor','admin'].includes(currentProfile.role)){buildUpdateFilters(); renderMetricList(); if(selectedMetricUuid) renderUpdateDetail(selectedMetricUuid);}
   } finally {document.getElementById('loadingOverlay').classList.remove('show');}
+}
+
+// 실적집계 테이블이 아직 없으면(DB 변경 전) 기존 화면은 그대로 동작하고 실적집계만 비활성화한다.
+async function loadCountData(){
+  const [bRes,ciRes,sRes,dRes]=await Promise.all([
+    sb.from('metrics').select('id,count_baseline_date'),
+    sb.from('metric_count_items').select('id,metric_id,item_order,label,baseline_count,updated_at').order('item_order',{ascending:true}),
+    sb.from('metric_count_summary').select('metric_id,count_item_id,item_order,label,baseline_count,count_baseline_date,latest_date,latest_count,cumulative_count'),
+    sb.from('metric_daily_counts').select('updated_at').order('updated_at',{ascending:false}).limit(1)
+  ]);
+  const err=bRes.error||ciRes.error||sRes.error||dRes.error;
+  if(err){
+    COUNT_FEATURE=false;DB_COUNT_ITEMS=[];DB_COUNT_SUMMARY=[];COUNT_LAST_UPDATE=null;
+    console.warn('실적집계 데이터를 불러오지 못했습니다(DB 변경 미적용 가능):',err.message||err);
+    return;
+  }
+  COUNT_FEATURE=true;
+  const base=new Map((bRes.data||[]).map(x=>[x.id,x.count_baseline_date]));
+  DB_METRICS.forEach(m=>{m.count_baseline_date=base.get(m.id)??null;});
+  DB_COUNT_ITEMS=ciRes.data||[];DB_COUNT_SUMMARY=sRes.data||[];
+  COUNT_LAST_UPDATE=dRes.data?.[0]?.updated_at||null;
+}
+function buildCountView(m){
+  const mine=DB_COUNT_SUMMARY.filter(r=>r.metric_id===m.id).sort((a,b)=>a.item_order-b.item_order);
+  return {
+    rows:mine.map(r=>({id:r.count_item_id,label:r.label,baseline:Number(r.baseline_count)||0,latest:Number(r.latest_count)||0,cumulative:Number(r.cumulative_count)||0})),
+    latestDate:mine.find(r=>r.latest_date)?.latest_date||null,
+    baselineDate:m.count_baseline_date||null,
+    available:COUNT_FEATURE
+  };
 }
 
 async function enterApp(){
@@ -993,7 +1125,9 @@ function renderAdminMetricList(){
   root.querySelectorAll('[data-amid]').forEach(el=>el.onclick=()=>{adminSelectedMetricId=el.dataset.amid;renderAdminMetricList();renderAdminMetricDetail(adminSelectedMetricId);});
 }
 function measurementOptions(value){
-  return ['계량','비계량-단계','비계량-체크'].map(x=>`<option ${x===value?'selected':''}>${x}</option>`).join('');
+  const list=['계량','비계량-단계','비계량-체크'];
+  if(COUNT_FEATURE||isCountType(value))list.push(COUNT_TYPE);
+  return list.map(x=>`<option ${x===value?'selected':''}>${x}</option>`).join('');
 }
 
 function isValidPlanMonth(v){
@@ -1027,6 +1161,7 @@ function renderAdminMetricDetail(id, isNew=false){
       <div class="admin-field"><label>계량 목표</label><input id="am_target" type="number" step="any" value="${m.quant_target??''}"></div>
       <div class="admin-field"><label>계량 실적</label><input id="am_current" type="number" step="any" value="${m.quant_current??''}"></div>
       <div class="admin-field"><label>계량 단위</label><input id="am_unit" value="${safe(m.quant_unit||'')}"></div>
+      <div class="admin-field" id="am_baseline_wrap"><label>기초누계 기준일 (실적집계)</label><input id="am_baseline_date" type="date" value="${safe(m.count_baseline_date||'')}"></div>
     </div>
     <div class="admin-toolbar" style="margin-top:14px">
       <button id="amSaveBase" class="admin-btn">${isNew?'신규 지표 저장':'기본정보 저장'}</button>
@@ -1036,7 +1171,8 @@ function renderAdminMetricDetail(id, isNew=false){
     <div id="amItemsArea"></div>`;
   const meas=document.getElementById('am_measurement');
   const paintItems=()=>renderAdminItems(m,items,isNew);
-  meas.onchange=paintItems; paintItems();
+  const syncBaseline=()=>{const w=document.getElementById('am_baseline_wrap');if(w)w.style.display=isCountType(meas.value)?'':'none';};
+  meas.onchange=()=>{syncBaseline();paintItems();}; syncBaseline(); paintItems();
 
   document.getElementById('amSaveBase').onclick=async()=>{
     const scheduleValue=document.getElementById('am_schedule').value.trim();
@@ -1058,6 +1194,8 @@ function renderAdminMetricDetail(id, isNew=false){
       document.getElementById('amBaseMsg').textContent='지표ID, 대분류, 중분류, 소분류는 필수입니다.';return;
     }
     if(payload.measurement_type!=='계량'){payload.quant_target=null;payload.quant_current=null;payload.quant_unit=null;}
+    if(COUNT_FEATURE){payload.count_baseline_date=isCountType(payload.measurement_type)?(document.getElementById('am_baseline_date').value||null):null;}
+    else if(isCountType(payload.measurement_type)){document.getElementById('amBaseMsg').textContent='DB 변경(07 SQL)이 적용되지 않아 실적집계 지표를 저장할 수 없습니다.';return;}
     const res=isNew?await sb.from('metrics').insert(payload).select('id').single():await sb.from('metrics').update(payload).eq('id',m.id).select('id').single();
     if(res.error){document.getElementById('amBaseMsg').textContent='저장 실패: '+res.error.message;return;}
     document.getElementById('amBaseMsg').textContent='저장 완료';
@@ -1068,7 +1206,7 @@ function renderAdminMetricDetail(id, isNew=false){
   };
   if(!isNew){
     document.getElementById('amDeleteMetric').onclick=async()=>{
-      if(!confirm(`${m.indicator_id} 지표와 연결된 단계/체크 항목을 삭제할까요?`))return;
+      if(!confirm(isCountType(m.measurement_type)?`${m.indicator_id} 지표와 집계 항목·일자별 실적을 모두 삭제할까요? 삭제하면 되돌릴 수 없습니다.`:`${m.indicator_id} 지표와 연결된 단계/체크 항목을 삭제할까요?`))return;
       const {error}=await sb.from('metrics').delete().eq('id',m.id);
       if(error){alert('삭제 실패: '+error.message);return;}
       adminSelectedMetricId=null; await loadDashboardData(); renderAdminMetricList();
@@ -1081,6 +1219,12 @@ function renderAdminItems(metric,items,isNew){
   const meas=document.getElementById('am_measurement')?.value||metric.measurement_type;
   if(meas==='계량'){
     area.innerHTML='<div class="admin-note" style="margin-top:16px">계량 지표는 단계/체크 항목을 사용하지 않습니다. 목표·실적·단위는 위 기본정보에서 관리합니다.</div>';
+    return;
+  }
+  if(isCountType(meas)){
+    if(!COUNT_FEATURE){area.innerHTML='<div class="admin-note" style="margin-top:16px">DB 변경(07 SQL)이 적용되지 않아 실적집계를 사용할 수 없습니다.</div>';return;}
+    if(isNew||!isCountType(metric.measurement_type)){area.innerHTML='<div class="admin-note" style="margin-top:16px">측정방식을 실적집계로 한 기본정보를 먼저 저장한 후 집계 항목을 추가할 수 있습니다.</div>';return;}
+    renderAdminCountItems(metric,area);
     return;
   }
   if(isNew){
@@ -1161,6 +1305,59 @@ function renderAdminItems(metric,items,isNew){
     }
     msg.textContent='단계/항목 저장 완료';
     await loadDashboardData(); renderAdminMetricList(); renderAdminMetricDetail(metric.id);
+  };
+}
+
+function renderAdminCountItems(metric,area){
+  const items=DB_COUNT_ITEMS.filter(x=>x.metric_id===metric.id).sort((a,b)=>a.item_order-b.item_order);
+  const rowHtml=(it,n)=>`<div class="count-item-edit item-edit" data-ci-id="${it?safe(it.id):''}">
+    <input class="ci_order" type="number" min="1" step="1" value="${it?it.item_order:n}" title="순서">
+    <input class="ci_label" value="${it?safe(it.label):''}" placeholder="항목명 (예: 상담)" title="항목명">
+    <input class="ci_baseline" type="number" min="0" step="1" value="${it?it.baseline_count:0}" title="기초누계">
+    <button class="admin-btn danger small ci_delete">삭제</button>
+  </div>`;
+  area.innerHTML=`<div class="admin-section-title">집계 항목 관리</div>
+    <div class="admin-note">항목명과 기초누계(현황판 도입 전 실적)를 입력하세요. 기초누계 기준일은 위 기본정보에서 설정합니다. 일자별 실적이 입력된 항목은 삭제할 수 없습니다.</div>
+    <div class="count-item-head"><span>순서</span><span>항목명</span><span>기초누계(건)</span><span></span></div>
+    <div id="adminCountItemsList">${items.map(it=>rowHtml(it)).join('')||'<div class="detail-empty">등록된 집계 항목이 없습니다.</div>'}</div>
+    <div class="admin-toolbar" style="margin-top:12px">
+      <button id="adminAddCountItem" class="admin-btn secondary">+ 항목 추가</button>
+      <button id="adminSaveCountItems" class="admin-btn">집계 항목 저장</button>
+    </div>
+    <div id="adminCountItemsMsg" class="note"></div>`;
+  const bindDelete=()=>area.querySelectorAll('.ci_delete').forEach(b=>b.onclick=()=>b.closest('.count-item-edit').remove());
+  bindDelete();
+  document.getElementById('adminAddCountItem').onclick=()=>{
+    const list=document.getElementById('adminCountItemsList');
+    if(list.querySelector('.detail-empty'))list.innerHTML='';
+    list.insertAdjacentHTML('beforeend',rowHtml(null,list.querySelectorAll('.count-item-edit').length+1));
+    bindDelete();
+  };
+  document.getElementById('adminSaveCountItems').onclick=async()=>{
+    const msg=document.getElementById('adminCountItemsMsg'); msg.textContent='';
+    const parsed=[...document.querySelectorAll('#adminCountItemsList .count-item-edit')].map(r=>({
+      id:r.dataset.ciId||null,
+      item_order:Number(r.querySelector('.ci_order').value),
+      label:r.querySelector('.ci_label').value.trim(),
+      baseline_count:r.querySelector('.ci_baseline').value.trim()===''?0:Number(r.querySelector('.ci_baseline').value)
+    }));
+    if(parsed.some(x=>!Number.isInteger(x.item_order)||x.item_order<1)){msg.textContent='순서는 1 이상의 정수로 입력하세요.';return;}
+    if(parsed.some(x=>!x.label)){msg.textContent='항목명은 필수입니다.';return;}
+    if(parsed.some(x=>!Number.isInteger(x.baseline_count)||x.baseline_count<0)){msg.textContent='기초누계는 0 이상의 정수로 입력하세요.';return;}
+    if(new Set(parsed.map(x=>x.item_order)).size!==parsed.length){msg.textContent='같은 지표 안에서 순서는 중복될 수 없습니다.';return;}
+    if(new Set(parsed.map(x=>x.label)).size!==parsed.length){msg.textContent='같은 항목명을 두 번 쓸 수 없습니다.';return;}
+    const kept=new Set(parsed.filter(x=>x.id).map(x=>x.id));
+    for(const it of items.filter(x=>!kept.has(x.id))){
+      const d=await sb.from('metric_count_items').delete().eq('id',it.id);
+      if(d.error){msg.textContent=d.error.code==='23503'?`'${it.label}' 항목은 일자별 실적이 입력되어 있어 삭제할 수 없습니다.`:'삭제 실패: '+d.error.message;return;}
+    }
+    for(const x of parsed){
+      const payload={metric_id:metric.id,item_order:x.item_order,label:x.label,baseline_count:x.baseline_count};
+      const r=x.id?await sb.from('metric_count_items').update(payload).eq('id',x.id):await sb.from('metric_count_items').insert(payload);
+      if(r.error){msg.textContent='저장 실패: '+r.error.message;return;}
+    }
+    await loadDashboardData(); renderAdminMetricList(); renderAdminMetricDetail(metric.id);
+    const m2=document.getElementById('adminCountItemsMsg'); if(m2)m2.textContent='집계 항목 저장 완료';
   };
 }
 
@@ -1273,9 +1470,14 @@ async function loadAuditLogs(){
     const oldItem=r.old_data||{}, newItem=r.new_data||{};
     const itemOrder=(newItem.item_order??oldItem.item_order??liveItem?.item_order??null);
     const itemContent=(newItem.content??oldItem.content??liveItem?.content??'');
+    const ciLabel=cid=>DB_COUNT_ITEMS.find(x=>x.id===cid)?.label||'';
     const itemLabel=r.table_name==='metric_items'
       ? `${itemOrder?itemOrder+'단계 · ':''}${itemContent||'단계/항목'}`
-      : '지표 기본정보';
+      : r.table_name==='metric_count_items'
+        ? `집계항목 · ${(newItem.label??oldItem.label??ciLabel(r.item_id))||'-'}`
+        : r.table_name==='metric_daily_counts'
+          ? `일자별 실적 · ${ciLabel(newItem.count_item_id??oldItem.count_item_id)||'항목'} · ${fmtDbDate(newItem.record_date??oldItem.record_date)}`
+          : '지표 기본정보';
     return {
       ...r,
       actor_name:(pmap.get(r.actor_user_id)?.name)||r.actor_user_id||'시스템',
@@ -1308,10 +1510,14 @@ function friendlyAuditDiff(r){
   const o=r.old_data||{}, n=r.new_data||{};
   if(r.operation==='INSERT'){
     if(r.table_name==='metric_items') return `단계/항목 추가 · 상태 ${n.status||'-'}${n.planned_schedule?' · 계획 '+n.planned_schedule:''}`;
+    if(r.table_name==='metric_daily_counts') return `일자별 실적 입력 · ${n.count_value??'-'}건`;
+    if(r.table_name==='metric_count_items') return `집계 항목 추가 · 기초누계 ${n.baseline_count??0}건`;
     return '지표 추가';
   }
   if(r.operation==='DELETE'){
     if(r.table_name==='metric_items') return `단계/항목 삭제 · ${o.content||''}`;
+    if(r.table_name==='metric_daily_counts') return `일자별 실적 삭제 · ${o.count_value??'-'}건`;
+    if(r.table_name==='metric_count_items') return `집계 항목 삭제 · ${o.label||''}`;
     return '지표 삭제';
   }
   const labels={
@@ -1319,7 +1525,8 @@ function friendlyAuditDiff(r){
     item_order:'순서',indicator_id:'지표ID',category:'대분류',metric_name:'중분류',
     detail_name:'소분류',responsible_departments:'담당부서',measurement_type:'측정방식',
     metric_schedule:'지표 추진일정',quant_target:'계량 목표',quant_current:'계량 실적',
-    quant_unit:'계량 단위',sort_order:'정렬순서',is_active:'활성상태'
+    quant_unit:'계량 단위',sort_order:'정렬순서',is_active:'활성상태',
+    label:'항목명',baseline_count:'기초누계',count_value:'건수',record_date:'일자',count_baseline_date:'기초누계 기준일'
   };
   const keys=[...new Set([...Object.keys(o),...Object.keys(n)])]
     .filter(k=>k!=='updated_at' && JSON.stringify(o[k])!==JSON.stringify(n[k]));
@@ -1408,6 +1615,7 @@ function renderMetricList(){
 function renderUpdateDetail(id){
   const m=DB_METRICS.find(x=>x.id===id), root=document.getElementById('updateDetail'); if(!m||!root)return;
   const common=`<div class="edit-title">${safe(m.indicator_id)} · ${safe(m.detail_name)}</div><div class="edit-meta">${safe(m.metric_name)}</div><div class="readonly-box"><div class="readonly-item"><div class="readonly-label">담당부서</div><div class="readonly-value">${safe((m.responsible_departments||[]).join(' / ')||'-')}</div></div><div class="readonly-item"><div class="readonly-label">측정방식</div><div class="readonly-value">${safe(m.measurement_type)}</div></div></div>`;
+  if(isCountType(m.measurement_type)){renderCountUpdate(m,root,common);return;}
   if(m.measurement_type==='계량'){
     root.innerHTML=common+`<div class="edit-section-title">계량 실적</div><div class="quant-box"><div><div class="field-label">목표</div><input class="edit-control" value="${safe(numText(m.quant_target,m.quant_unit))}" disabled></div><div><div class="field-label">현재 실적</div><input id="quantCurrent" class="edit-control" type="number" min="0" step="any" value="${m.quant_current??''}"></div><button id="saveQuant" class="save-btn">저장</button></div><div id="quantMsg" class="inline-msg"></div><div class="security-note">부서 담당자는 현재 실적만 수정할 수 있습니다. 목표·기본정보는 기획조정실 권한에서 관리합니다.</div>`;
     document.getElementById('saveQuant').onclick=()=>saveQuant(m.id);
@@ -1417,6 +1625,79 @@ function renderUpdateDetail(id){
     items.forEach(it=>{const s=document.getElementById(`status_${it.id}`),d=document.getElementById(`date_${it.id}`);const sync=()=>{if(s.value!=='완료'){d.value='';d.disabled=true}else d.disabled=false};s.onchange=sync;sync();});
     root.querySelectorAll('[data-save-item]').forEach(b=>b.onclick=()=>saveItem(b.dataset.saveItem));
   }
+}
+async function renderCountUpdate(m,root,common){
+  const items=DB_COUNT_ITEMS.filter(x=>x.metric_id===m.id).sort((a,b)=>a.item_order-b.item_order);
+  if(!COUNT_FEATURE){root.innerHTML=common+'<div class="security-note">집계 데이터를 불러오지 못했습니다. 잠시 후 다시 시도하거나 기획조정실에 문의하세요.</div>';return;}
+  if(!items.length){root.innerHTML=common+'<div class="security-note">집계 항목이 아직 설정되지 않았습니다. 기획조정실 관리에서 항목을 먼저 등록해야 합니다.</div>';return;}
+  const today=kstTodayIso(), base=m.count_baseline_date||'', minDate=base?isoAddDays(base,1):'';
+  const flash=COUNT_FLASH&&COUNT_FLASH.metricId===m.id?COUNT_FLASH:null; COUNT_FLASH=null;
+  root.innerHTML=common+`<div class="edit-section-title">일자별 실적 입력</div>
+    <div class="count-entry" style="--count-n:${items.length}">
+      <div><div class="field-label">일자</div><input id="countDate" class="edit-control" type="date" value="${safe(flash?.date||today)}" max="${today}" ${minDate?`min="${minDate}"`:''}></div>
+      ${items.map(it=>`<div><div class="field-label">${safe(it.label)} (건)</div><input class="edit-control count-input" data-ci="${safe(it.id)}" type="number" min="0" step="1" inputmode="numeric"></div>`).join('')}
+      <button id="saveCounts" class="save-btn">저장</button>
+    </div>
+    <div id="countMsg" class="inline-msg ${flash?flash.cls:''}">${safe(flash?.text||'')}</div>
+    <div class="security-note">같은 날짜를 다시 저장하면 덮어씁니다. 실적이 없는 항목은 0을 입력하세요. 주말·휴일처럼 실적이 없는 날은 입력하지 않아도 됩니다.${base?` 기초누계 기준일(${fmtDbDate(base)}) 다음 날부터 입력할 수 있습니다.`:''}</div>
+    <div class="edit-section-title">최근 입력 기록</div>
+    <div id="countRecent"><div class="detail-empty" style="padding:20px">불러오는 중입니다...</div></div>`;
+  const {data,error}=await sb.from('metric_daily_counts').select('count_item_id,record_date,count_value').eq('metric_id',m.id).order('record_date',{ascending:false}).limit(150);
+  if(selectedMetricUuid!==m.id||!document.getElementById('countDate'))return;
+  const recentBox=document.getElementById('countRecent');
+  if(error){recentBox.innerHTML=`<div class="security-note">최근 기록을 불러오지 못했습니다: ${safe(error.message)}</div>`;return;}
+  const byDate=new Map();
+  (data||[]).forEach(r=>{if(!byDate.has(r.record_date))byDate.set(r.record_date,{});byDate.get(r.record_date)[r.count_item_id]=r.count_value;});
+  const dateEl=document.getElementById('countDate');
+  const fill=async(keepMsg)=>{
+    const d=dateEl.value; let v=byDate.get(d);
+    if(d&&!v){
+      const one=await sb.from('metric_daily_counts').select('count_item_id,record_date,count_value').eq('metric_id',m.id).eq('record_date',d);
+      if(!one.error&&one.data&&one.data.length){v={};one.data.forEach(r=>{v[r.count_item_id]=r.count_value;});}
+    }
+    root.querySelectorAll('.count-input').forEach(inp=>{inp.value=v&&v[inp.dataset.ci]!==undefined?v[inp.dataset.ci]:'';});
+    if(!keepMsg){const msg=document.getElementById('countMsg');msg.className='inline-msg';msg.textContent=v?'이 날짜에 이미 입력된 값을 불러왔습니다. 고친 뒤 저장하면 덮어씁니다.':'';}
+  };
+  dateEl.onchange=()=>fill(false);
+  await fill(!!flash);
+  const dates=[...byDate.keys()].sort().reverse().slice(0,10);
+  recentBox.innerHTML=dates.length?`<div class="count-table-wrap"><table class="count-table"><thead><tr><th>일자</th>${items.map(it=>`<th>${safe(it.label)}</th>`).join('')}<th></th></tr></thead><tbody>${dates.map(d=>`<tr class="${d===today?'is-today':''}"><td>${safe(fmtDbDate(d))} (${WEEKDAY_KO[isoWeekday(d)]})</td>${items.map(it=>`<td>${byDate.get(d)[it.id]===undefined?'-':countInt(byDate.get(d)[it.id])}</td>`).join('')}<td><button class="admin-btn secondary small" data-count-edit="${d}">수정</button><button class="admin-btn danger small" data-count-del="${d}">삭제</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="detail-empty" style="padding:20px">아직 입력된 기록이 없습니다.</div>';
+  recentBox.querySelectorAll('[data-count-edit]').forEach(b=>b.onclick=()=>{dateEl.value=b.dataset.countEdit;fill(false);dateEl.scrollIntoView({block:'center'});});
+  recentBox.querySelectorAll('[data-count-del]').forEach(b=>b.onclick=()=>deleteCounts(m,b.dataset.countDel));
+  document.getElementById('saveCounts').onclick=()=>saveCounts(m);
+}
+function countMsg(text,cls){const el=document.getElementById('countMsg');if(el){el.textContent=text;el.className='inline-msg '+(cls||'');}}
+async function saveCounts(m){
+  const date=document.getElementById('countDate').value;
+  if(!date){countMsg('일자를 선택하세요.','error');return;}
+  if(date>kstTodayIso()){countMsg('미래 날짜에는 입력할 수 없습니다.','error');return;}
+  if(m.count_baseline_date&&date<=m.count_baseline_date){countMsg(`기초누계 기준일(${fmtDbDate(m.count_baseline_date)}) 다음 날부터 입력할 수 있습니다.`,'error');return;}
+  const counts={};
+  for(const inp of document.querySelectorAll('#updateDetail .count-input')){
+    const s=inp.value.trim();
+    if(s===''){countMsg('모든 항목의 건수를 입력하세요. 실적이 없으면 0을 입력합니다.','error');inp.focus();return;}
+    const n=Number(s);
+    if(!Number.isInteger(n)||n<0){countMsg('건수는 0 이상의 정수로 입력하세요.','error');inp.focus();return;}
+    counts[inp.dataset.ci]=n;
+  }
+  const wd=isoWeekday(date);
+  if((wd===0||wd===6)&&!confirm(`${fmtDbDate(date)}은 주말입니다. 그래도 저장할까요?`))return;
+  const btn=document.getElementById('saveCounts'); btn.disabled=true;
+  try{
+    const {data,error}=await sb.rpc('upsert_daily_counts',{p_metric_id:m.id,p_record_date:date,p_counts:counts});
+    if(error)throw error;
+    COUNT_FLASH={metricId:m.id,date,text:Number(data)>0?`${fmtDbDate(date)} 실적이 저장되었습니다.`:'바뀐 값이 없어 저장할 내용이 없습니다.',cls:'ok'};
+    await loadDashboardData();
+  }catch(e){countMsg(e.message||String(e),'error');btn.disabled=false;}
+}
+async function deleteCounts(m,date){
+  if(!confirm(`${fmtDbDate(date)} (${WEEKDAY_KO[isoWeekday(date)]}) 기록을 삭제할까요? 누계에서도 빠집니다.`))return;
+  try{
+    const {error}=await sb.rpc('delete_daily_counts',{p_metric_id:m.id,p_record_date:date});
+    if(error)throw error;
+    COUNT_FLASH={metricId:m.id,date:kstTodayIso(),text:`${fmtDbDate(date)} 기록을 삭제했습니다.`,cls:'ok'};
+    await loadDashboardData();
+  }catch(e){countMsg(e.message||String(e),'error');}
 }
 async function saveItem(itemId){
   const s=document.getElementById(`status_${itemId}`),d=document.getElementById(`date_${itemId}`),msg=document.getElementById(`msg_${itemId}`);msg.textContent='';msg.className='inline-msg';
